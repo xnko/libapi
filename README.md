@@ -63,7 +63,7 @@ api_loop_start, api_loop_post, api_loop_exec, api_loop_run
 
 ## Documentation
 
-see [libapi/include/api.h](https://github.com/xnko/libapi/libapi/master/include/api.h)
+see [libapi/include/api.h](https://github.com/xnko/libapi/blob/master/src/api/include/api.h)
 
 ## Community
 

@@ -25,14 +25,14 @@
 #include "api_loop.h"
 
 typedef struct api_wait_t {
-	struct api_wait_t* next;
-	struct api_loop_t* from;
-	struct api_task_t* task;
+    struct api_wait_t* next;
+    struct api_loop_t* from;
+    struct api_task_t* task;
 } api_wait_t;
 
 void api_wait_init();
 int api_wait_exec(struct api_loop_t* current, 
-				struct api_loop_t* loop, int sleep);
+                struct api_loop_t* loop, int sleep);
 void api_wait_notify(struct api_loop_t* loop);
 
 #endif // API_WAIT_H_INCLUDED

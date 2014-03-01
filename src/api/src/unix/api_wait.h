@@ -26,11 +26,11 @@
 #include "api_async.h"
 
 typedef struct api_wait_t {
-	api_mpscq_node_t node;
-	void(*handler)(api_loop_t* loop, struct api_wait_t* async, int events);
-	api_loop_t* from;
-	api_loop_t* to;
-	api_task_t* task;
+    api_mpscq_node_t node;
+    void(*handler)(api_loop_t* loop, struct api_wait_t* async, int events);
+    api_loop_t* from;
+    api_loop_t* to;
+    api_task_t* task;
 } api_wait_t;
 
 void api_wait_init(api_loop_t* loop);

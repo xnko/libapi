@@ -23,26 +23,25 @@
 
 int api_error_translate(int error)
 {
+    switch (error) {
+    case 0:         return API__OK;
+    case EPERM:     return API__NOT_PERMITTED;
+    case 2:         return API__NOT_FOUND;
+    case EIO:       return API__IO_ERROR;
+    case EBADF:     return API__BAD_FILE;
+    case EAGAIN:    return API__TEMPORARY_UNAVAILABLE;
+    case ENOMEM:    return API__NO_MEMORY;
+    case EACCES:    return API__ACCESS_DENIED;
+    case EFAULT:    return API__FAULT;
+    case EEXIST:    return API__ALREADY_EXIST;
+    case ENODEV:    return API__NO_DEVICE;
+    case EINVAL:    return API__INVALID_ARGUMENT;
+    case ENFILE:    return API__LIMIT;
+    case EMFILE:    return API__TOO_MANY_FILES;
+    case ENOTTY:    return API__NOT_TYPEWRITER;
+    case ENOSPC:    return API__NO_SPACE;
+    case EADDRINUSE:return API__ADDRESS_IN_USE;
+    }
 
-	switch (error) {
-	case 0:			return API__OK;
-	case EPERM:		return API__NOT_PERMITTED;
-	case 2:			return API__NOT_FOUND;
-	case EIO:		return API__IO_ERROR;
-	case EBADF:		return API__BAD_FILE;
-	case EAGAIN:	return API__TEMPORARY_UNAVAILABLE;
-	case ENOMEM:	return API__NO_MEMORY;
-	case EACCES:	return API__ACCESS_DENIED;
-	case EFAULT:	return API__FAULT;
-	case EEXIST:	return API__ALREADY_EXIST;
-	case ENODEV:	return API__NO_DEVICE;
-	case EINVAL:	return API__INVALID_ARGUMENT;
-	case ENFILE:	return API__LIMIT;
-	case EMFILE:	return API__TOO_MANY_FILES;
-	case ENOTTY:	return API__NOT_TYPEWRITER;
-	case ENOSPC:	return API__NO_SPACE;
-	case EADDRINUSE:return API__ADDRESS_IN_USE;
-	}
-
-	return error;
+    return error;
 }

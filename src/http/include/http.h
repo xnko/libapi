@@ -28,51 +28,63 @@ extern "C" {
 
 #include "../../api/include/api.h"
 
-#define HTTP_EXTERN
+#ifdef _WIN32
+#if defined(BUILD_HTTP_SHARED)
+    #define HTTP_EXTERN __declspec(dllexport)
+#elif defined(USE_HTTP_SHARED)
+    #define HTTP_EXTERN __declspec(dllimport)
+#else
+    #define HTTP_EXTERN
+#endif
+#elif __GNUC__ >= 4
+    #define HTTP_EXTERN __attribute__((visibility("default")))
+#else
+    #define HTTP_EXTERN
+#endif
 
 typedef struct http_header_t {
-	char* name;
-	char* value;
-	struct http_header_t* next;
+    char* name;
+    char* value;
+    struct http_header_t* next;
 } http_header_t;
 
 typedef struct http_cookie_t {
-	char* name;
-	char* value;
-	time_t expires;
-	char* path;
-	struct http_cookie_t* next;
+    char* name;
+    char* value;
+    time_t expires;
+    char* path;
+    struct http_cookie_t* next;
 } http_cookie_t;
 
 typedef struct http_param_t {
-	char* name;
-	char* value;
-	struct http_param_t* next;
+    char* name;
+    char* value;
+    struct http_param_t* next;
 } http_param_t;
 
 typedef struct http_request_t {
-	int major;
-	int minor;
-	const char* method;
-	char* body;
-	char* url;
-	struct {
-		char* schema;
-		char* host;
-		char* path;
-		char* query;
-		char* fragment;
-	} uri;
-	http_param_t* params;
-	http_header_t* headers;
-	http_cookie_t* cookies;
+    int major;
+    int minor;
+    const char* method;
+    char* body;
+    char* url;
+    struct {
+        char* schema;
+        char* host;
+        char* path;
+        char* query;
+        char* fragment;
+    } uri;
+    http_param_t* params;
+    http_header_t* headers;
+    http_cookie_t* cookies;
 } http_request_t;
 
 HTTP_EXTERN const char* http_request_parse(http_request_t* request,
-										   api_stream_t* stream);
+                                           api_stream_t* stream);
 HTTP_EXTERN void http_request_clean(http_request_t* request, api_pool_t* pool);
 HTTP_EXTERN const char* http_request_get_header(http_request_t* request,
-												const char* name);
+                                                const char* name);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -25,25 +25,24 @@
 #include "api_loop.h"
 
 typedef struct api_async_t {
-	api_loop_t* loop;
-	api_loop_fn callback;
-	void* arg;
-	size_t stack_size;
-	void (*handler)(struct api_async_t* async);
+    api_loop_t* loop;
+    api_loop_fn callback;
+    void* arg;
+    size_t stack_size;
+    void (*handler)(struct api_async_t* async);
 } api_async_t;
 
 typedef struct api_exec_t {
-	api_async_t async;
-	api_loop_t* loop;
-	api_task_t* task;
-	int result;
+    api_async_t async;
+    api_loop_t* loop;
+    api_task_t* task;
+    int result;
 } api_exec_t;
 
 void api_async_init();
-int api_async_post(api_loop_t* loop, 
-				   api_loop_fn callback, void* arg, size_t stack_size);
+int api_async_post(api_loop_t* loop, api_loop_fn callback, void* arg, size_t stack_size);
 int api_async_wakeup(api_loop_t* loop, api_task_t* task);
 int api_async_exec(api_loop_t* current, api_loop_t* loop,
-				   api_loop_fn callback, void* arg, size_t stack_size);
+                   api_loop_fn callback, void* arg, size_t stack_size);
 
 #endif // API_ASYNC_H_INCLUDED

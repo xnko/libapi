@@ -27,13 +27,13 @@
 
 int api_close(int fd)
 {
-	while (0 != close(fd))
-	{
-		if (errno != EINTR)
-		{
-			return api_error_translate(errno);
-		}
-	}
+    while (0 != close(fd))
+    {
+        if (errno != EINTR)
+        {
+            return api_error_translate(errno);
+        }
+    }
 
-	return API__OK;
+    return API__OK;
 }

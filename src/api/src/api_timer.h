@@ -30,47 +30,47 @@
  *
  * Algorithm:
  *
- * assume	TS = api_timers_t
- *			TL = api_timer_list_t
- *			TR = api_timer_t
+ * assume   TS = api_timers_t
+ *          TL = api_timer_list_t
+ *          TR = api_timer_t
  *
  * set(TS, value) complexity = O(TS.length)
  *
- *		TL = null
- *		if (value < TS.head.value) {
- *			TL = create new
- *			insert TL into TS.head
- *		} else {
- *			TL = TS.head;
- *			while (TL != null && value < TL.value)
- *				TL = TL.next;
- *		}
+ *      TL = null
+ *      if (value < TS.head.value) {
+ *          TL = create new
+ *          insert TL into TS.head
+ *      } else {
+ *          TL = TS.head;
+ *          while (TL != null && value < TL.value)
+ *              TL = TL.next;
+ *      }
  *
- *		if (TL == null) {
- *			TL = create new
- *			insert TL into TS.tail
- *		}
+ *      if (TL == null) {
+ *          TL = create new
+ *          insert TL into TS.tail
+ *      }
  *	
- *		insert TR into TL.tail
+ *      insert TR into TL.tail
  *
  *
  * reset(TR) complexity = O(1)
  *
- *		remove TR from TR.list and
- *		insert into TR.list.tail
+ *      remove TR from TR.list and
+ *      insert into TR.list.tail
  *
  *
  * remove(TR) complexity = O(1)
  *
- *		remove TR from TR.list
+ *      remove TR from TR.list
  *
  *
  * process(TS) complexity = O(count of fired TR)
  *
- *		iterate over TL
- *			iterate over TR
- *				if TR elapsed then fire
- *				else exit process
+ *      iterate over TL
+ *          iterate over TR
+ *              if TR elapsed then fire
+ *              else exit process
  *
  *
  * For little amount of various timer values (not amount of timer requests)
@@ -85,38 +85,38 @@
 #include "api_task.h"
 
 typedef enum api_timer_type_t {
-	TIMER_Sleep,
-	TIMER_Idle,
-	TIMER_Timeout
+    TIMER_Sleep,
+    TIMER_Idle,
+    TIMER_Timeout
 } api_timer_type_t;
 
 typedef struct api_timer_t {
-	struct api_timer_t* next;
-	struct api_timer_t* prev;
-	struct api_timer_list_t* list;
-	api_task_t* task;
-	uint64_t issued;
-	uint64_t version;
-	int elapsed;
+    struct api_timer_t* next;
+    struct api_timer_t* prev;
+    struct api_timer_list_t* list;
+    api_task_t* task;
+    uint64_t issued;
+    uint64_t version;
+    int elapsed;
 } api_timer_t;
 
 typedef struct api_timer_list_t {
-	struct api_timer_list_t* next;
-	struct api_timer_list_t* prev;
-	api_timer_t* head;
-	api_timer_t* tail;
-	uint64_t value;
+    struct api_timer_list_t* next;
+    struct api_timer_list_t* prev;
+    api_timer_t* head;
+    api_timer_t* tail;
+    uint64_t value;
 } api_timer_list_t;
 
 typedef struct api_timers_t {
-	api_timer_list_t* head;
-	api_timer_list_t* tail;
-	api_pool_t* pool;
-	uint64_t version;
+    api_timer_list_t* head;
+    api_timer_list_t* tail;
+    api_pool_t* pool;
+    uint64_t version;
 } api_timers_t;
 
 void api_timer_set(api_timers_t* timers, api_timer_t* timer,
-				   api_timer_type_t type, uint64_t value);
+                    api_timer_type_t type, uint64_t value);
 int api_sleep_exec(api_timers_t* timers, api_task_t* task, uint64_t value);
 int api_idle_exec(api_timers_t* timers, api_task_t* task, uint64_t value);
 int api_timeout_exec(api_timers_t* timers, api_timer_t* timer, uint64_t value);
@@ -126,8 +126,7 @@ int api_timeout_exec(api_timers_t* timers, api_timer_t* timer, uint64_t value);
  * TIMER_idle    - value = period
  * TIMER_timeout - value = period
  */
-int api_timer_process(api_timers_t* timers, api_timer_type_t type,
-					   uint64_t value);
+int api_timer_process(api_timers_t* timers, api_timer_type_t type, uint64_t value);
 void api_timer_terminate(api_timers_t* timers);
 
 #endif // API_TIMER_H_INCLUDED

@@ -31,54 +31,54 @@
 
 int api_event_init(api_event_t* ev, api_loop_t* loop)
 {
-	memset(ev, 0, sizeof(*ev));
+    memset(ev, 0, sizeof(*ev));
 
-	ev->loop = loop;
+    ev->loop = loop;
 
-	return API__OK;
+    return API__OK;
 }
 
 int api_event_signal(api_event_t* ev, api_loop_t* loop)
 {
-	api_task_t* task;
+    api_task_t* task;
 
-	++ev->value;
+    ++ev->value;
 
-	if (ev->reserved != 0)
-	{
-		task = (api_task_t*)ev->reserved;
-		ev->reserved = 0;
+    if (ev->reserved != 0)
+    {
+        task = (api_task_t*)ev->reserved;
+        ev->reserved = 0;
 
-		api_task_wakeup(task);
-	}
+        api_task_wakeup(task);
+    }
 
-	return API__OK;
+    return API__OK;
 }
 
 int api_event_wait(api_event_t* ev, uint64_t timeout)
 {
-	api_timer_t timer;
+    api_timer_t timer;
 
-	if (ev->value == 0)
-	{
-		if (timeout > 0)
-		{
-			memset(&timer, 0, sizeof(timer));
-			timer.task = ev->loop->scheduler.current;
+    if (ev->value == 0)
+    {
+        if (timeout > 0)
+        {
+            memset(&timer, 0, sizeof(timer));
+            timer.task = ev->loop->scheduler.current;
 
-			api_timeout_exec(&ev->loop->timeouts, &timer, timeout);
-		}
+            api_timeout_exec(&ev->loop->timeouts, &timer, timeout);
+        }
 
-		ev->reserved = ev->loop->scheduler.current;
-		api_task_sleep(ev->loop->scheduler.current);
-		ev->loop->scheduler.current = 0;
+        ev->reserved = ev->loop->scheduler.current;
+        api_task_sleep(ev->loop->scheduler.current);
+        ev->loop->scheduler.current = 0;
 
-		if (timeout > 0)
-			api_timeout_exec(&ev->loop->timeouts, &timer, 0);
+        if (timeout > 0)
+            api_timeout_exec(&ev->loop->timeouts, &timer, 0);
 
-		if (timeout > 0 && timer.elapsed)
-			return api_error_translate(ETIMEDOUT);
-	}
+        if (timeout > 0 && timer.elapsed)
+            return api_error_translate(ETIMEDOUT);
+    }
 
-	return API__OK;
+    return API__OK;
 }

@@ -24,7 +24,7 @@
 
 
 /*
- *	socket
+ * socket
  */
 
 int api_socket_non_block(int fd, int on);
@@ -33,7 +33,7 @@ int api_socket_recv_buffer_size(int fd, int size);
 
 
 /*
- *	tcp
+ * tcp
  */
 
 int api_tcp_nodelay(int fd, int enable);

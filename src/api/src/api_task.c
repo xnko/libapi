@@ -37,12 +37,12 @@ const int offset_esp = (int)(&((CONTEXT*)0)->Esp);
 
 __declspec(noinline) void __stdcall api_task_getcontext(api_task_t* task)
 {
-	RtlCaptureContext(&task->platform);
+    RtlCaptureContext(&task->platform);
 }
 
 __declspec(noinline) void __stdcall api_task_setcontext(api_task_t* task)
 {
-	SetThreadContext(GetCurrentThread(), &task->platform);
+    SetThreadContext(GetCurrentThread(), &task->platform);
 }
 
 #if defined(_WIN64)
@@ -53,26 +53,26 @@ extern void __stdcall api_task_swapcontext_native(CONTEXT* oucp, CONTEXT* ucp);
 
 void __stdcall api_task_swapcontext_native(CONTEXT* oucp, CONTEXT* ucp)
 {
-	__asm {
+    __asm {
 
-		push [oucp]
-		call api_task_getcontext
+        push [oucp]
+        call api_task_getcontext
 
-		// correct eip
-		mov eax, [oucp]
-		add eax, offset_eip
-		mov edx, offset done
-		mov [eax], edx
+        // correct eip
+        mov eax, [oucp]
+        add eax, offset_eip
+        mov edx, offset done
+        mov [eax], edx
 
-		// correct esp
-		mov eax, [oucp]
-		add eax, offset_esp
-		mov [eax], esp
+        // correct esp
+        mov eax, [oucp]
+        add eax, offset_esp
+        mov [eax], esp
 
         push [ucp]
-		call api_task_setcontext
+        call api_task_setcontext
 done:
-	}
+    }
 }
 
 #endif
@@ -84,35 +84,35 @@ done:
 #endif
 void api_task_swapcontext(api_task_t* current, api_task_t* other)
 {
-	api_scheduler_t* scheduler = current->scheduler;
+    api_scheduler_t* scheduler = current->scheduler;
 	
-	/* save/restore system error codes across task switches */
+    /* save/restore system error codes across task switches */
 
 #if defined(__linux__)
-	int error = errno;
+    int error = errno;
 #else
-	DWORD error = GetLastError();
+    DWORD error = GetLastError();
 #endif
 
-	scheduler->prev = current;
-	scheduler->current = other;
-	api_task_swapcontext_native(&current->platform, &other->platform);
-	scheduler->current = current;
+    scheduler->prev = current;
+    scheduler->current = other;
+    api_task_swapcontext_native(&current->platform, &other->platform);
+    scheduler->current = current;
 
-	if (scheduler->prev != 0 &&
-		scheduler->prev->is_post &&
-		scheduler->prev->is_done)
-	{
-		// if prev was forked and done then delete it
+    if (scheduler->prev != 0 &&
+        scheduler->prev->is_post &&
+        scheduler->prev->is_done)
+    {
+        // if prev was forked and done then delete it
 
-		api_task_delete(scheduler->prev);
-		scheduler->prev = 0;
-	}
+        api_task_delete(scheduler->prev);
+        scheduler->prev = 0;
+    }
 
 #if defined(__linux__)
-	errno = error;
+    errno = error;
 #else
-	SetLastError(error);
+    SetLastError(error);
 #endif
 }
 #if !defined(__linux__)
@@ -124,36 +124,36 @@ void api_task_swapcontext(api_task_t* current, api_task_t* other)
 static void api_task_entry_point(api_task_t* task, api_task_fn callback)
 {
     callback(task);
-	task->is_done = 1;
+    task->is_done = 1;
 
-	api_task_swapcontext(task, task->parent);
+    api_task_swapcontext(task, task->parent);
 }
 
 #define api_task_makecontext(ctx, fun, args, ...) \
-		makecontext(ctx, fun, args, __VA_ARGS__)
+        makecontext(ctx, fun, args, __VA_ARGS__)
 
 #else
 
 void api_task_defer(api_task_t* task)
 {
-	task->is_done = 1;
-	task->scheduler->prev = task;
-	api_task_setcontext(task->parent);
+    task->is_done = 1;
+    task->scheduler->prev = task;
+    api_task_setcontext(task->parent);
 }
 
 void api_task_makecontext(api_task_t* task, api_task_fn callback)
 {
-	size_t* sp = (size_t*)((char*)(task + 1) + task->stack_size);
+    size_t* sp = (size_t*)((char*)(task + 1) + task->stack_size);
 
-	*(sp - 1) = (size_t)task;
-	*(sp - 2) = (size_t)task;
-	*(sp - 3) = (size_t)api_task_defer;
+    *(sp - 1) = (size_t)task;
+    *(sp - 2) = (size_t)task;
+    *(sp - 3) = (size_t)api_task_defer;
 
 #if defined(_WIN64)
-	task->platform.Rip = (size_t)callback;
+    task->platform.Rip = (size_t)callback;
     task->platform.Rsp = (size_t)(sp - 3);
 #else
-	task->platform.Eip = (size_t)callback;
+    task->platform.Eip = (size_t)callback;
     task->platform.Esp = (size_t)(sp - 3);
 #endif
 }
@@ -162,9 +162,9 @@ void api_task_makecontext(api_task_t* task, api_task_fn callback)
 
 void api_scheduler_init(api_scheduler_t* scheduler)
 {
-	scheduler->current = &scheduler->main;
-	scheduler->main.scheduler = scheduler;
-	scheduler->prev = 0;
+    scheduler->current = &scheduler->main;
+    scheduler->main.scheduler = scheduler;
+    scheduler->prev = 0;
 }
 
 void api_scheduler_destroy(api_scheduler_t* scheduler)
@@ -172,23 +172,23 @@ void api_scheduler_destroy(api_scheduler_t* scheduler)
 }
 
 api_task_t* api_task_create(api_scheduler_t* scheduler, 
-							api_task_fn callback, size_t stack_size)
+                            api_task_fn callback, size_t stack_size)
 {
-	api_task_t* task;
+    api_task_t* task;
 
-	if (stack_size == 0)
-		stack_size = 8 * 1024;
+    if (stack_size == 0)
+        stack_size = 8 * 1024;
 
-	stack_size -= sizeof(*task);
+    stack_size -= sizeof(*task);
 
-	task = (api_task_t*)api_alloc(scheduler->pool, sizeof(*task) + stack_size);
+    task = (api_task_t*)api_alloc(scheduler->pool, sizeof(*task) + stack_size);
 
-	task->data = 0;
-	task->is_done = 0;
-	task->is_post = 0;
-	task->parent = 0;
-	task->stack_size = stack_size;
-	task->scheduler = scheduler;
+    task->data = 0;
+    task->is_done = 0;
+    task->is_post = 0;
+    task->parent = 0;
+    task->stack_size = stack_size;
+    task->scheduler = scheduler;
 
 #if defined(__linux__)
 
@@ -200,14 +200,14 @@ api_task_t* api_task_create(api_scheduler_t* scheduler,
     task->platform.uc_link = 0;
 
     api_task_makecontext(&task->platform, (void (*)())api_task_entry_point,
-						2, task, callback);
+                        2, task, callback);
 
 #else
 
-	task->platform.ContextFlags = CONTEXT_ALL;
+    task->platform.ContextFlags = CONTEXT_ALL;
 
-	api_task_getcontext(task);
-	api_task_makecontext(task, callback);
+    api_task_getcontext(task);
+    api_task_makecontext(task, callback);
 
 #endif
 
@@ -216,65 +216,65 @@ api_task_t* api_task_create(api_scheduler_t* scheduler,
 
 void api_task_delete(api_task_t* task)
 {
-	/* dont delete yourself */
-	if (task->scheduler->current != task)
-		api_free(task->scheduler->pool,
-			sizeof(*task) + task->stack_size, task);
+    /* dont delete yourself */
+    if (task->scheduler->current != task)
+        api_free(task->scheduler->pool,
+                sizeof(*task) + task->stack_size, task);
 }
 
 void api_task_yield(api_task_t* current, void* value)
 {
-	current->scheduler->value = value;
+    current->scheduler->value = value;
 
-	/* main task cannot yield */
-	if (current != &current->scheduler->main)
-		api_task_swapcontext(current, current->parent);
+    /* main task cannot yield */
+    if (current != &current->scheduler->main)
+        api_task_swapcontext(current, current->parent);
 }
 
 api_task_t* api_task_current(api_scheduler_t* scheduler)
 {
-	return scheduler->current;
+    return scheduler->current;
 }
 
 void* api_task_exec(api_task_t* task)
 {
-	if (task->is_done)
-		return 0;
+    if (task->is_done)
+        return 0;
 
-	/* main task not executable */
-	if (task == &task->scheduler->main)
-		return 0;
+    /* main task not executable */
+    if (task == &task->scheduler->main)
+        return 0;
 
-	task->parent = task->scheduler->current;
-	task->is_post = 0;
+    task->parent = task->scheduler->current;
+    task->is_post = 0;
 	
-	api_task_swapcontext(task->scheduler->current, task);
+    api_task_swapcontext(task->scheduler->current, task);
 
-	return task->scheduler->value;
+    return task->scheduler->value;
 }
 
 void api_task_post(api_task_t* task)
 {
-	// reset all ???
-	if (task->is_done)
-		return;
+    // reset all ???
+    if (task->is_done)
+        return;
 
-	/* main task not postable */
-	if (task == &task->scheduler->main)
-		return;
+    /* main task not postable */
+    if (task == &task->scheduler->main)
+        return;
 
-	task->parent = &task->scheduler->main;
-	task->is_post = 1;
+    task->parent = &task->scheduler->main;
+    task->is_post = 1;
 	
-	api_task_swapcontext(task->scheduler->current, task);
+    api_task_swapcontext(task->scheduler->current, task);
 }
 
 void api_task_sleep(api_task_t* current)
 {
-	api_task_swapcontext(current, &current->scheduler->main);
+    api_task_swapcontext(current, &current->scheduler->main);
 }
 
 void api_task_wakeup(api_task_t* task)
 {
-	api_task_swapcontext(task->scheduler->current, task);
+    api_task_swapcontext(task->scheduler->current, task);
 }

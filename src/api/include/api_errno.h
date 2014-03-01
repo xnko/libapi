@@ -24,25 +24,25 @@
 
 #include <errno.h>
 
-#define API__OK						0
-#define API__NOT_PERMITTED			EPERM
-#define	API__NOT_FOUND				2
-#define	API__IO_ERROR				EIO
-#define	API__BAD_FILE				EBADF
-#define	API__TEMPORARY_UNAVAILABLE	EAGAIN
-#define	API__NO_MEMORY				ENOMEM
-#define	API__ACCESS_DENIED			EACCES
-#define	API__FAULT					EFAULT
-#define	API__ALREADY_EXIST			EEXIST
-#define	API__NO_DEVICE				ENODEV
-#define	API__INVALID_ARGUMENT		EINVAL
-#define	API__LIMIT					ENFILE
-#define	API__TOO_MANY_FILES			EMFILE
-#define	API__NOT_TYPEWRITER			ENOTTY
-#define	API__NO_SPACE				ENOSPC
+#define API__OK                     0
+#define API__NOT_PERMITTED          EPERM
+#define	API__NOT_FOUND              2
+#define	API__IO_ERROR               EIO
+#define	API__BAD_FILE               EBADF
+#define	API__TEMPORARY_UNAVAILABLE  EAGAIN
+#define	API__NO_MEMORY              ENOMEM
+#define	API__ACCESS_DENIED          EACCES
+#define	API__FAULT                  EFAULT
+#define	API__ALREADY_EXIST          EEXIST
+#define	API__NO_DEVICE              ENODEV
+#define	API__INVALID_ARGUMENT       EINVAL
+#define	API__LIMIT                  ENFILE
+#define	API__TOO_MANY_FILES         EMFILE
+#define	API__NOT_TYPEWRITER         ENOTTY
+#define	API__NO_SPACE               ENOSPC
 
-#define	API__ADDRESS_IN_USE			EADDRINUSE
+#define	API__ADDRESS_IN_USE         EADDRINUSE
 
-#define	API__TERMINATE				10000
+#define	API__TERMINATE              10000 /* not sure */
 
 #endif // API_ERRNO_H_INCLUDED

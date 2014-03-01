@@ -33,7 +33,7 @@
  */
 
 typedef struct api_pool_t {
-	int dummy;
+    int dummy;
 } api_pool_t;
 
 void api_pool_init(api_pool_t* pool);

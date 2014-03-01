@@ -33,13 +33,13 @@ libapi was developed to solve this problem.
  * proxy
  * ipv4 and ipv6
  * open source
-
- demo\src\web_server.c demonstrates some above features and additional
  * ssl stack with openssl
  * http basic stack
  * keep-alive with timeouts
  * http pipelining
  * https as ssl filter
+
+ for complete examples see [demos](https://github.com/xnko/libapi/tree/master/src/demo/src)
 
 ## Architecture
 

@@ -26,65 +26,65 @@ static struct os_win_t g_api_wait_processor;
 static struct os_win_t g_api_wait_notifier;
 
 void api_wait_processor(struct os_win_t* e, DWORD transferred,
-						OVERLAPPED* overlapped, struct api_loop_t* loop)
+                        OVERLAPPED* overlapped, struct api_loop_t* loop)
 {
-	api_wait_t* wait = (api_wait_t*)overlapped;
+    api_wait_t* wait = (api_wait_t*)overlapped;
 
-	wait->next = loop->waiters;
-	loop->waiters = wait;
+    wait->next = loop->waiters;
+    loop->waiters = wait;
 }
 
 void api_wait_notifier(struct os_win_t* e, DWORD transferred,
-					   OVERLAPPED* overlapped, struct api_loop_t* loop)
+                       OVERLAPPED* overlapped, struct api_loop_t* loop)
 {
-	api_wait_t* wait = (api_wait_t*)overlapped;
-	api_task_wakeup(wait->task);
+    api_wait_t* wait = (api_wait_t*)overlapped;
+    api_task_wakeup(wait->task);
 }
 
 
 void api_wait_init()
 {
-	g_api_wait_processor.processor = api_wait_processor;
-	g_api_wait_notifier.processor = api_wait_notifier;
+    g_api_wait_processor.processor = api_wait_processor;
+    g_api_wait_notifier.processor = api_wait_notifier;
 }
 
 int api_wait_exec(struct api_loop_t* current,
-				struct api_loop_t* loop, int sleep)
+                struct api_loop_t* loop, int sleep)
 {
-	api_wait_t wait;
+    api_wait_t wait;
 
-	wait.from = current;
-	wait.task = current->scheduler.current;
+    wait.from = current;
+    wait.task = current->scheduler.current;
 
-	if (!PostQueuedCompletionStatus(loop->iocp, 0, 
-		(ULONG_PTR)&g_api_wait_processor, (LPOVERLAPPED)&wait))
-	{
-		return api_error_translate(GetLastError());
-	}
+    if (!PostQueuedCompletionStatus(loop->iocp, 0, 
+        (ULONG_PTR)&g_api_wait_processor, (LPOVERLAPPED)&wait))
+    {
+        return api_error_translate(GetLastError());
+    }
 
-	if (sleep)
-		api_task_sleep(current->scheduler.current);
+    if (sleep)
+        api_task_sleep(current->scheduler.current);
 
-	return API__OK;
+    return API__OK;
 }
 
 void api_wait_notify(struct api_loop_t* loop)
 {
-	api_wait_t* wait = 0;
-	api_wait_t* next = 0;
-	int error = 0;
+    api_wait_t* wait = 0;
+    api_wait_t* next = 0;
+    int error = 0;
 
-	wait = loop->waiters;
-	while (wait != 0)
-	{
-		next = wait->next;
+    wait = loop->waiters;
+    while (wait != 0)
+    {
+        next = wait->next;
 
-		if (!PostQueuedCompletionStatus(wait->from, 0,
-			(ULONG_PTR)&g_api_wait_notifier, (LPOVERLAPPED)wait))
-		{
-			//return api_error_translate(GetLastError());
-		}
+        if (!PostQueuedCompletionStatus(wait->from, 0,
+            (ULONG_PTR)&g_api_wait_notifier, (LPOVERLAPPED)wait))
+        {
+            //return api_error_translate(GetLastError());
+        }
 
-		wait = next;
-	}
+        wait = next;
+    }
 }

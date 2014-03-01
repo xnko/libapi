@@ -24,7 +24,7 @@ api_task_swapcontext_native PROC
 	add rax, offset_rsp
 	mov [rax], rsp
 
-    push [rsp + 16]
+	push [rsp + 16]
 	call api_task_setcontext
 done:
 	add rsp, 16

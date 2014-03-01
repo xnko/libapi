@@ -26,7 +26,7 @@
 
 void api_pool_init(api_pool_t* pool)
 {
-	memset(pool, 0, sizeof(*pool));
+    memset(pool, 0, sizeof(*pool));
 }
 
 void api_pool_cleanup(api_pool_t* pool)
@@ -35,12 +35,12 @@ void api_pool_cleanup(api_pool_t* pool)
 
 void* api_alloc(api_pool_t* pool, size_t size)
 {
-	return malloc(size);
+    return malloc(size);
 }
 
 /* size parameter can be hint for memory manager */
 void api_free(api_pool_t* pool, size_t size, void* ptr)
 {
-	if (size > 0)
-		free(ptr);
+    if (size > 0)
+        free(ptr);
 }

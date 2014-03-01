@@ -35,58 +35,58 @@
 
 int api_socket_non_block(int fd, int on)
 {
-	int r;
+    int r;
 
-	do
-	{
-		r = ioctl(fd, FIONBIO, &on);
-	}
-	while (r == -1 && errno == EINTR);
+    do
+    {
+        r = ioctl(fd, FIONBIO, &on);
+    }
+    while (r == -1 && errno == EINTR);
 
-	if (r)
-		return api_error_translate(errno);
+    if (r)
+        return api_error_translate(errno);
 
-	return API__OK;
+    return API__OK;
 }
 
 int api_socket_send_buffer_size(int fd, int size)
 {
-	if (0 == setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)))
-		return API__OK;
+    if (0 == setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)))
+        return API__OK;
 
-	return api_error_translate(errno);
+    return api_error_translate(errno);
 }
 
 int api_socket_recv_buffer_size(int fd, int size)
 {
-	if (0 == setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)))
-		return API__OK;
+    if (0 == setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)))
+        return API__OK;
 
-	return api_error_translate(errno);
+    return api_error_translate(errno);
 }
 
 int api_tcp_nodelay(int fd, int enable)
 {
-	int result = setsockopt(fd,
-					IPPROTO_TCP,     /* set option at TCP level */
-					TCP_NODELAY,     /* name of option */
-					(char*)&enable,  /* the cast is historical cruft */
-					sizeof(int));    /* length of option value */
+    int result = setsockopt(fd,
+                    IPPROTO_TCP,     /* set option at TCP level */
+                    TCP_NODELAY,     /* name of option */
+                    (char*)&enable,  /* the cast is historical cruft */
+                    sizeof(int));    /* length of option value */
 
-	if (result == 0)
-		return API__OK;
+    if (result == 0)
+        return API__OK;
 
-	return api_error_translate(result);
+    return api_error_translate(result);
 }
 
 int api_tcp_keepalive(int fd, int enable, unsigned int delay)
 {
-	if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable)))
-		return api_error_translate(errno);
+    if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable)))
+        return api_error_translate(errno);
 
-	if (enable && setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE,
-							&delay, sizeof(delay)))
-		return api_error_translate(errno);
+    if (enable && setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE,
+                            &delay, sizeof(delay)))
+        return api_error_translate(errno);
 
-	return API__OK;
+    return API__OK;
 }

@@ -23,43 +23,43 @@
 
 void api_wait_handler(api_loop_t* loop, api_wait_t* wait, int events)
 {
-	api_task_wakeup(wait->task);
+    api_task_wakeup(wait->task);
 }
 
 void api_wait_init(api_loop_t* loop)
 {
-	api_mpscq_create(&loop->waiters);
+    api_mpscq_create(&loop->waiters);
 }
 
 void api_wait_exec(api_loop_t* current, api_loop_t* loop, int sleep)
 {
-	api_wait_t wait;
+    api_wait_t wait;
 
-	wait.from = current;
-	wait.to = loop;
-	wait.task = current->scheduler.current;
+    wait.from = current;
+    wait.to = loop;
+    wait.task = current->scheduler.current;
 
-	api_mpscq_push(&loop->waiters, &wait.node);
+    api_mpscq_push(&loop->waiters, &wait.node);
 
-	if (sleep)
-		api_task_sleep(current->scheduler.current);
+    if (sleep)
+        api_task_sleep(current->scheduler.current);
 }
 
 void api_wait_notify(api_loop_t* loop)
 {
-	api_wait_t* wait = 0;
-	int error = 0;
+    api_wait_t* wait = 0;
+    int error = 0;
 
-	wait = (api_wait_t*)api_mpscq_pop(&loop->waiters);
-	while (wait != 0)
-	{
-		wait->handler = api_wait_handler;
-		api_mpscq_push(&wait->from->asyncs.queue, &wait->node);
-		if (-1 == eventfd_write(wait->from->asyncs.fd, 1))
-		{
-			/* handle error */
-		}
+    wait = (api_wait_t*)api_mpscq_pop(&loop->waiters);
+    while (wait != 0)
+    {
+        wait->handler = api_wait_handler;
+        api_mpscq_push(&wait->from->asyncs.queue, &wait->node);
+        if (-1 == eventfd_write(wait->from->asyncs.fd, 1))
+        {
+            /* handle error */
+        }
 
-		wait = (api_wait_t*)api_mpscq_pop(&loop->waiters);
-	}
+        wait = (api_wait_t*)api_mpscq_pop(&loop->waiters);
+    }
 }

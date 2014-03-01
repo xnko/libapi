@@ -32,100 +32,100 @@ LPFN_GETACCEPTEXSOCKADDRS lpfnGetAcceptExSockaddrs = 0;
 
 void api_socket_init()
 {
-	WORD version = 0x202;
-	WSADATA wsadata;
-	SOCKET socket;
-	DWORD dwBytes;
-	GUID GuidAcceptEx = WSAID_ACCEPTEX;
-	GUID GuidDisconnectEx = WSAID_DISCONNECTEX;
-	GUID GuidConnectEx = WSAID_CONNECTEX;
-	GUID GuidGetAcceptExSockaddrs = WSAID_GETACCEPTEXSOCKADDRS;
-	int iResult;
+    WORD version = 0x202;
+    WSADATA wsadata;
+    SOCKET socket;
+    DWORD dwBytes;
+    GUID GuidAcceptEx = WSAID_ACCEPTEX;
+    GUID GuidDisconnectEx = WSAID_DISCONNECTEX;
+    GUID GuidConnectEx = WSAID_CONNECTEX;
+    GUID GuidGetAcceptExSockaddrs = WSAID_GETACCEPTEXSOCKADDRS;
+    int iResult;
 
-	WSAStartup(version, &wsadata);
+    WSAStartup(version, &wsadata);
 
-	socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP,
-						NULL, 0, WSA_FLAG_OVERLAPPED);
+    socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP,
+                        NULL, 0, WSA_FLAG_OVERLAPPED);
 
-	iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
-						&GuidAcceptEx, sizeof(GuidAcceptEx),
-						&lpfnAcceptEx, sizeof(lpfnAcceptEx),
-						&dwBytes, NULL, NULL);
-	if (iResult == SOCKET_ERROR)
-		return;
+    iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                        &GuidAcceptEx, sizeof(GuidAcceptEx),
+                        &lpfnAcceptEx, sizeof(lpfnAcceptEx),
+                        &dwBytes, NULL, NULL);
+    if (iResult == SOCKET_ERROR)
+        return;
 
-	iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
-						&GuidDisconnectEx, sizeof(GuidDisconnectEx),
-						&lpfnDisconnectEx, sizeof(lpfnDisconnectEx),
-						&dwBytes, 0, 0);
-	if (iResult == SOCKET_ERROR)
-		return;
+    iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                        &GuidDisconnectEx, sizeof(GuidDisconnectEx),
+                        &lpfnDisconnectEx, sizeof(lpfnDisconnectEx),
+                        &dwBytes, 0, 0);
+    if (iResult == SOCKET_ERROR)
+        return;
 
-	iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
-						&GuidConnectEx, sizeof(GuidConnectEx),
-						&lpfnConnectEx, sizeof(lpfnConnectEx),
-						&dwBytes, 0, 0);
-	if (iResult == SOCKET_ERROR)
-		return;
+    iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                        &GuidConnectEx, sizeof(GuidConnectEx),
+                        &lpfnConnectEx, sizeof(lpfnConnectEx),
+                        &dwBytes, 0, 0);
+    if (iResult == SOCKET_ERROR)
+        return;
 
-	iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
-						&GuidGetAcceptExSockaddrs,
-						sizeof(GuidGetAcceptExSockaddrs),
-						&lpfnGetAcceptExSockaddrs,
-						sizeof(lpfnGetAcceptExSockaddrs), &dwBytes, 0, 0);
-	if (iResult == SOCKET_ERROR)
-		return;
+    iResult = WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                        &GuidGetAcceptExSockaddrs,
+                        sizeof(GuidGetAcceptExSockaddrs),
+                        &lpfnGetAcceptExSockaddrs,
+                        sizeof(lpfnGetAcceptExSockaddrs), &dwBytes, 0, 0);
+    if (iResult == SOCKET_ERROR)
+        return;
 
-	closesocket(socket);
+    closesocket(socket);
 }
 
 int api_socket_non_block(SOCKET fd, int on)
 {
-	u_long v = on;
+    u_long v = on;
 
-	if (SOCKET_ERROR == ioctlsocket(fd, FIONBIO, &v))
-		return api_error_translate(WSAGetLastError());
+    if (SOCKET_ERROR == ioctlsocket(fd, FIONBIO, &v))
+        return api_error_translate(WSAGetLastError());
 
-	return API__OK;
+    return API__OK;
 }
 
 int api_socket_send_buffer_size(SOCKET fd, int size)
 {
-	if (SOCKET_ERROR != setsockopt(fd, SOL_SOCKET, SO_SNDBUF,
-							(const char*)&size, sizeof(size)))
-		return API__OK;
+    if (SOCKET_ERROR != setsockopt(fd, SOL_SOCKET, SO_SNDBUF,
+                            (const char*)&size, sizeof(size)))
+        return API__OK;
 
-	return api_error_translate(WSAGetLastError());
+    return api_error_translate(WSAGetLastError());
 }
 
 int api_socket_recv_buffer_size(SOCKET fd, int size)
 {
-	if (SOCKET_ERROR != setsockopt(fd, SOL_SOCKET, SO_RCVBUF,
-							(const char*)&size, sizeof(size)))
-		return API__OK;
+    if (SOCKET_ERROR != setsockopt(fd, SOL_SOCKET, SO_RCVBUF,
+                            (const char*)&size, sizeof(size)))
+        return API__OK;
 
-	return api_error_translate(WSAGetLastError());
+    return api_error_translate(WSAGetLastError());
 }
 
 int api_tcp_nodelay(SOCKET fd, int enable)
 {
-	int result = setsockopt(fd,
-					IPPROTO_TCP,     /* set option at TCP level */
-					TCP_NODELAY,     /* name of option */
-					(char*)&enable,  /* the cast is historical cruft */
-					sizeof(int));    /* length of option value */
+    int result = setsockopt(fd,
+                    IPPROTO_TCP,     /* set option at TCP level */
+                    TCP_NODELAY,     /* name of option */
+                    (char*)&enable,  /* the cast is historical cruft */
+                    sizeof(int));    /* length of option value */
 
-	if (result == 0)
-		return API__OK;
+    if (result == 0)
+        return API__OK;
 
-	return api_error_translate(result);
+    return api_error_translate(result);
 }
 
 int api_tcp_keepalive(SOCKET fd, int enable, unsigned int delay)
 {
-	if (SOCKET_ERROR == setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
-							(const char*)&enable, sizeof(enable)))
-		return api_error_translate(WSAGetLastError());
+    if (SOCKET_ERROR == setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
+                            (const char*)&enable, sizeof(enable)))
+        return api_error_translate(WSAGetLastError());
 
-	return API__OK;
+    return API__OK;
 }

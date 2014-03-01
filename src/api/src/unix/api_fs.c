@@ -28,40 +28,40 @@
 
 int api_fs_stat(const char* path, api_stat_t* st)
 {
-	struct stat s;
-	stat(path, &s);
+    struct stat s;
+    stat(path, &s);
 
-	st->date_access = s.st_atime;
-	st->date_create = s.st_ctime;
-	st->date_modified = s.st_mtime;
-	st->size = s.st_size;
+    st->date_access = s.st_atime;
+    st->date_create = s.st_ctime;
+    st->date_modified = s.st_mtime;
+    st->size = s.st_size;
 
-	return API_OK;
+    return API_OK;
 }
 
 int api_fs_create(api_stream_t* stream, const char* path)
 {
-	int fd = open(path, O_CREAT | O_WRONLY | O_TRUNC | O_NONBLOCK, 0666);
-	if (fd < 0)
-		return api_error_translate(errno);
+    int fd = open(path, O_CREAT | O_WRONLY | O_TRUNC | O_NONBLOCK, 0666);
+    if (fd < 0)
+        return api_error_translate(errno);
 
-	api_stream_init(stream, STREAM_File, fd);
-	
-	return API__OK;
+    api_stream_init(stream, STREAM_File, fd);
+    
+    return API__OK;
 }
 
 int api_fs_open(api_stream_t* stream, const char* path)
 {
-	int fd = open(path, O_APPEND | O_RDWR | O_NONBLOCK);
-	if (fd < 0)
-		return api_error_translate(errno);
+    int fd = open(path, O_APPEND | O_RDWR | O_NONBLOCK);
+    if (fd < 0)
+        return api_error_translate(errno);
 
-	api_stream_init(stream, STREAM_File, fd);
+    api_stream_init(stream, STREAM_File, fd);
 
-	return API__OK;
+    return API__OK;
 }
 
 int api_fs_enum(api_fs_enum_t* options)
 {
-	return 0;
+    return 0;
 }

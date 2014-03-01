@@ -26,44 +26,44 @@
 
 int api_fs_stat(const char* path, api_stat_t* stat)
 {
-	struct _stat64i32 s;
-	_stat64i32(path, &s);
+    struct _stat64i32 s;
+    _stat64i32(path, &s);
 
-	stat->date_access = s.st_atime;
-	stat->date_create = s.st_ctime;
-	stat->date_modified = s.st_mtime;
-	stat->size = s.st_size;
+    stat->date_access = s.st_atime;
+    stat->date_create = s.st_ctime;
+    stat->date_modified = s.st_mtime;
+    stat->size = s.st_size;
 
-	return API_OK;
+    return API_OK;
 }
 
 int api_fs_create(api_stream_t* stream, const char* path)
 {
-	HANDLE fd = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ
-								| FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-								CREATE_ALWAYS, FILE_FLAG_OVERLAPPED, NULL);
-	if (fd == INVALID_HANDLE_VALUE)
-		return api_error_translate(GetLastError());
+    HANDLE fd = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ
+                            | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+                            CREATE_ALWAYS, FILE_FLAG_OVERLAPPED, NULL);
+    if (fd == INVALID_HANDLE_VALUE)
+        return api_error_translate(GetLastError());
 
-	api_stream_init(stream, STREAM_File, (fd_t)fd);
+    api_stream_init(stream, STREAM_File, (fd_t)fd);
 
-	return API__OK;
+    return API__OK;
 }
 
 int api_fs_open(api_stream_t* stream, const char* path)
 {
-	HANDLE fd = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ
-								| FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-								OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
-	if (fd == INVALID_HANDLE_VALUE)
-		return api_error_translate(GetLastError());
+    HANDLE fd = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ
+                            | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+                            OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+    if (fd == INVALID_HANDLE_VALUE)
+        return api_error_translate(GetLastError());
 
-	api_stream_init(stream, STREAM_File, (fd_t)fd);
+    api_stream_init(stream, STREAM_File, (fd_t)fd);
 	
-	return API__OK;
+    return API__OK;
 }
 
 int api_fs_enum(api_fs_enum_t* options)
 {
-	return 0;
+    return 0;
 }

@@ -38,21 +38,21 @@ typedef CONTEXT api_context_t;
 #endif
 
 typedef struct api_task_t {
-	api_context_t	platform;
-	struct api_scheduler_t* scheduler;
-	struct api_task_t* parent;
-	size_t	stack_size;	// stack size
-	int		is_done;	// finished
-	int		is_post;	// task is posted
-	void*	data;		// user data
+    api_context_t   platform;
+    struct api_scheduler_t* scheduler;
+    struct api_task_t* parent;
+    size_t  stack_size; // stack size
+    int     is_done;    // finished
+    int     is_post;    // task is posted
+    void*   data;       // user data
 } api_task_t;
 
 typedef struct api_scheduler_t {
-	struct api_task_t*	current;
-	struct api_task_t*	prev;
-	struct api_task_t	main;
-	void*  value;
-	api_pool_t* pool;
+    struct api_task_t*  current;
+    struct api_task_t*  prev;
+    struct api_task_t   main;
+    void* value;
+    api_pool_t* pool;
 } api_scheduler_t;
 
 typedef void* (*api_task_fn)(api_task_t* task);
@@ -61,7 +61,7 @@ API_EXTERN void api_scheduler_init(api_scheduler_t* scheduler);
 API_EXTERN void api_scheduler_destroy(api_scheduler_t* scheduler);
 
 API_EXTERN api_task_t* api_task_create(api_scheduler_t* scheduler,
-									  api_task_fn callback, size_t stack_size);
+                        api_task_fn callback, size_t stack_size);
 API_EXTERN void api_task_delete(api_task_t* task);
 API_EXTERN void api_task_yield(api_task_t* task, void* value);
 API_EXTERN api_task_t* api_task_current(api_scheduler_t* scheduler);

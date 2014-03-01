@@ -28,43 +28,43 @@
 #include "api_async.h"
 #include "api_wait.h"
 
-#define API_READ	1
-#define API_WRITE	2
+#define API_READ    1
+#define API_WRITE   2
 
 typedef struct os_win_t {
-	void(*processor)(struct os_win_t* e, DWORD transferred,
-					OVERLAPPED* overlapped, struct api_loop_t* loop);
+    void(*processor)(struct os_win_t* e, DWORD transferred,
+                    OVERLAPPED* overlapped, struct api_loop_t* loop);
 } os_win_t;
 
 typedef struct api_loop_t {
-	HANDLE iocp;
-	int terminated;
-	uint64_t refs;
-	struct api_pool_t pool;
-	uint64_t now;
-	uint64_t last_activity;
-	struct api_scheduler_t scheduler;
-	struct api_timers_t sleeps;
-	struct api_timers_t idles;
-	struct api_timers_t timeouts;
-	struct api_wait_t* waiters;
+    HANDLE iocp;
+    int terminated;
+    uint64_t refs;
+    struct api_pool_t pool;
+    uint64_t now;
+    uint64_t last_activity;
+    struct api_scheduler_t scheduler;
+    struct api_timers_t sleeps;
+    struct api_timers_t idles;
+    struct api_timers_t timeouts;
+    struct api_wait_t* waiters;
 } api_loop_t;
 
 static uint64_t api_loop_ref(api_loop_t* loop)
 {
-	return InterlockedIncrement64((volatile LONGLONG*)&loop->refs);
+    return InterlockedIncrement64((volatile LONGLONG*)&loop->refs);
 }
 
 static uint64_t api_loop_unref(api_loop_t* loop)
 {
-	uint64_t refs = InterlockedDecrement64((volatile LONGLONG*)&loop->refs);
+    uint64_t refs = InterlockedDecrement64((volatile LONGLONG*)&loop->refs);
 
-	if (refs == 0)
-	{
-		free(loop);
-	}
+    if (refs == 0)
+    {
+        free(loop);
+    }
 
-	return refs;
+    return refs;
 }
 
 #endif // API_LOOP_H_INCLUDED

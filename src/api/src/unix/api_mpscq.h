@@ -41,10 +41,10 @@ static void api_mpscq_create(api_mpscq_t* self)
 
 static void api_mpscq_push(api_mpscq_t* self, api_mpscq_node_t* n)
 {
-	api_mpscq_node_t* prev;
+    api_mpscq_node_t* prev;
 
     n->next = 0;
-	prev = __sync_lock_test_and_set(&self->head, n);
+    prev = __sync_lock_test_and_set(&self->head, n);
     prev->next = n;
 }
 

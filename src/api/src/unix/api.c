@@ -31,7 +31,7 @@ void api_init()
 
 uint64_t api_time_current()
 {
-   struct timeval tv;       
-   if (gettimeofday(&tv, 0) != 0) return 0;
-   return (uint64_t)((tv.tv_sec * 1000ul) + (tv.tv_usec / 1000ul));
+    struct timeval tv;       
+    if (gettimeofday(&tv, 0) != 0) return 0;
+    return (uint64_t)((tv.tv_sec * 1000ul) + (tv.tv_usec / 1000ul));
 }

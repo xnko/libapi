@@ -29,12 +29,12 @@
 
 void api_init()
 {
-	api_async_init();
-	api_wait_init();
-	api_socket_init();
+    api_async_init();
+    api_wait_init();
+    api_socket_init();
 }
 
 uint64_t api_time_current()
 {
-	return time(NULL) * 1000;
+    return time(NULL) * 1000;
 }

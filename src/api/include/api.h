@@ -52,12 +52,12 @@ extern "C" {
     XX(ACCESS_DENIED, "permission denied")                                    \
     XX(FAULT, "bad address in system call argument")                          \
     XX(ALREADY_EXIST, "already exist")                                        \
-    XX(NO_DEVICE, "no such device") 										  \
-    XX(INVALID_ARGUMENT, "invalid argument")								  \
-    XX(LIMIT, "limit has been reached")										  \
-    XX(TOO_MANY_FILES, "too many open files")								  \
-    XX(NOT_TYPEWRITER, "not a typewriter")									  \
-    XX(NO_SPACE, "no space left on device")									  \
+    XX(NO_DEVICE, "no such device")                                           \
+    XX(INVALID_ARGUMENT, "invalid argument")                                  \
+    XX(LIMIT, "limit has been reached")                                       \
+    XX(TOO_MANY_FILES, "too many open files")                                 \
+    XX(NOT_TYPEWRITER, "not a typewriter")                                    \
+    XX(NO_SPACE, "no space left on device")                                   \
     XX(TERMINATE, "terminate")
 
 typedef enum {

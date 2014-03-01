@@ -85,5 +85,6 @@ The question is how grow up stack automatically on demand ?
 
 ### Visual Studio Debugger
 
-Under Visual Studio Debug session sometimes tasks curropting.
+On Windows under Visual Studio Debug session sometimes tasks curropting,
+due to thread context switches by app and also by debugger.
 No Problem occures in Release mode.

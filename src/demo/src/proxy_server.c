@@ -7,7 +7,7 @@
 const char* listen_ip = "0.0.0.0";
 int listen_port = 8085;
 
-const char* backend_ip = "127.0.0.1:9090"; // or any ip
+const char* backend_ip = "127.0.0.1"; // or any ip
 int backend_port = 80;
 
 typedef struct proxy_t {

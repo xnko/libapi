@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Make files">
+      <UniqueIdentifier>{16c260cb-ff9c-489f-a7da-6193fd6e5dd2}</UniqueIdentifier>
+      <Extensions>*.mak</Extensions>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{fda08cd1-26d7-46b8-af95-87d0676941e6}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{3f22dab4-452b-45d6-b48d-4b7c2dd2b71d}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src\unix">
+      <UniqueIdentifier>{b574318c-09b3-4864-ae6f-990b304f2a1d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\api\Makefile" />
+    <None Include="..\..\..\src\api\debug.mak">
+      <Filter>Make files</Filter>
+    </None>
+    <None Include="..\..\..\src\api\release.mak">
+      <Filter>Make files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\api\include\api.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_loop.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_mpscq.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\include\api_errno.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_async.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_wait.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_stream.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_socket.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\include\api_linux.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_list.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_pool.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_task.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_error.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\unix\api_misc.h">
+      <Filter>src\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_timer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\api\src\unix\api.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_loop.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_async.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_wait.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_stream.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_socket.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_tcp.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_fs.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\api_pool.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\api_task.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_error.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_misc.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\api_timer.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\unix\api_event.c">
+      <Filter>src\unix</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

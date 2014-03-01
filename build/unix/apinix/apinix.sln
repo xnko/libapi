@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "api", "..\api\api.vcxproj", "{33D47F45-40BB-4432-990E-1EE05A1647E2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "http", "..\http\http.vcxproj", "{F73D759C-C08A-4CBB-84B0-F43650648B9E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{33D47F45-40BB-4432-990E-1EE05A1647E2} = {33D47F45-40BB-4432-990E-1EE05A1647E2}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ssl", "..\ssl\ssl.vcxproj", "{797DD8BF-2B00-4ABB-BDA8-D79F9EE52E1B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{33D47F45-40BB-4432-990E-1EE05A1647E2} = {33D47F45-40BB-4432-990E-1EE05A1647E2}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "demo", "..\demo\demo.vcxproj", "{455C0610-2A8C-47FD-AEBF-7605564F69D0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{33D47F45-40BB-4432-990E-1EE05A1647E2} = {33D47F45-40BB-4432-990E-1EE05A1647E2}
+		{F73D759C-C08A-4CBB-84B0-F43650648B9E} = {F73D759C-C08A-4CBB-84B0-F43650648B9E}
+		{797DD8BF-2B00-4ABB-BDA8-D79F9EE52E1B} = {797DD8BF-2B00-4ABB-BDA8-D79F9EE52E1B}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33D47F45-40BB-4432-990E-1EE05A1647E2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{33D47F45-40BB-4432-990E-1EE05A1647E2}.Debug|Win32.Build.0 = Debug|Win32
+		{33D47F45-40BB-4432-990E-1EE05A1647E2}.Release|Win32.ActiveCfg = Release|Win32
+		{33D47F45-40BB-4432-990E-1EE05A1647E2}.Release|Win32.Build.0 = Release|Win32
+		{F73D759C-C08A-4CBB-84B0-F43650648B9E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F73D759C-C08A-4CBB-84B0-F43650648B9E}.Debug|Win32.Build.0 = Debug|Win32
+		{F73D759C-C08A-4CBB-84B0-F43650648B9E}.Release|Win32.ActiveCfg = Release|Win32
+		{F73D759C-C08A-4CBB-84B0-F43650648B9E}.Release|Win32.Build.0 = Release|Win32
+		{797DD8BF-2B00-4ABB-BDA8-D79F9EE52E1B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{797DD8BF-2B00-4ABB-BDA8-D79F9EE52E1B}.Debug|Win32.Build.0 = Debug|Win32
+		{797DD8BF-2B00-4ABB-BDA8-D79F9EE52E1B}.Release|Win32.ActiveCfg = Release|Win32
+		{797DD8BF-2B00-4ABB-BDA8-D79F9EE52E1B}.Release|Win32.Build.0 = Release|Win32
+		{455C0610-2A8C-47FD-AEBF-7605564F69D0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{455C0610-2A8C-47FD-AEBF-7605564F69D0}.Debug|Win32.Build.0 = Debug|Win32
+		{455C0610-2A8C-47FD-AEBF-7605564F69D0}.Release|Win32.ActiveCfg = Release|Win32
+		{455C0610-2A8C-47FD-AEBF-7605564F69D0}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

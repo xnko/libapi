@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src\win">
+      <UniqueIdentifier>{97956d0a-edae-4496-ab8c-2ba308c9f28d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\api\include\api.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\include\api_errno.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\include\api_win.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_list.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_pool.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_task.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\win\api_loop.h">
+      <Filter>src\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\win\api_error.h">
+      <Filter>src\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\win\api_async.h">
+      <Filter>src\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\win\api_wait.h">
+      <Filter>src\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\win\api_stream.h">
+      <Filter>src\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\win\api_socket.h">
+      <Filter>src\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\api\src\api_timer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\api\src\api_pool.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\api_task.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_loop.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_error.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_async.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_wait.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_stream.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_fs.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_socket.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\api_timer.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_tcp.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\api\src\win\api_event.c">
+      <Filter>src\win</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="..\..\..\src\api\src\win\api_task_x64.asm">
+      <Filter>src</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>

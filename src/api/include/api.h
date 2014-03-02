@@ -217,7 +217,7 @@ typedef struct api_tcp_t {
     api_address_t address;
 } api_tcp_t;
 
-/* performa tcp bind, listen and conditional connection accepts */
+/* performs tcp bind, listen and conditional connection accepts */
 typedef struct api_tcp_listener_t {
 #if defined(__linux__)
     struct {
@@ -285,7 +285,7 @@ typedef void (*api_loop_fn)(api_loop_t* loop, void* arg);
  */
 
 /*
- *	api initialization, should be called before any api_* call
+ * api initialization, should be called before any api_* call
  */
 API_EXTERN void api_init();
 

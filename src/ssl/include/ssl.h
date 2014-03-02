@@ -46,8 +46,6 @@ typedef struct ssl_session_t {
     void* ctx;
 } ssl_session_t;
 
-typedef struct ssl_stream_handle_t ssl_stream_handle_t;
-
 typedef struct ssl_stream_t {
     api_filter_t filter;
     struct api_stream_t* stream;

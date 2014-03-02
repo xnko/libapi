@@ -64,50 +64,18 @@ int api_loop_cleanup(api_loop_t* loop)
 uint64_t api_loop_calculate_wait_timeout(api_loop_t* loop)
 {
     uint64_t timeout = (uint64_t)-1;
-    uint64_t timeout_sleep = (uint64_t)-1;
-    uint64_t timeout_idle = (uint64_t)-1;
-    uint64_t timeout_timeout = (uint64_t)-1;
+    uint64_t timeout_sleep = api_timers_nearest_event(&loop->sleeps, loop->now);
+    uint64_t timeout_idle = api_timers_nearest_event(&loop->idles, loop->now);
+    uint64_t timeout_timeout = api_timers_nearest_event(&loop->timeouts, loop->now);
 
-    if (loop->sleeps.head)
-    {
-        timeout_sleep = loop->sleeps.head->value;
-
-        if (timeout_sleep > loop->now - loop->sleeps.head->head->issued)
-            timeout_sleep -= (loop->now - loop->sleeps.head->head->issued);
-    }
-
-    if (loop->idles.head)
-    {
-        timeout_idle = loop->idles.head->value;
-
-        if (timeout_idle > loop->now - loop->idles.head->head->issued)
-            timeout_idle -= (loop->now - loop->idles.head->head->issued);
-    }
-
-    if (loop->timeouts.head)
-    {
-        timeout_timeout = loop->timeouts.head->value;
-
-        if (timeout_timeout > loop->now - loop->timeouts.head->head->issued)
-            timeout_timeout -= (loop->now - loop->timeouts.head->head->issued);
-    }
-
-    if (timeout_sleep != -1)
+    if (timeout_sleep < timeout)
         timeout = timeout_sleep;
 
-    if (timeout_idle != -1)
-        if (timeout == -1)
-            timeout = timeout_idle;
-        else
-            if (timeout_idle < timeout)
-                timeout = timeout_idle;
+    if (timeout_idle < timeout)
+        timeout = timeout_idle;
 
-    if (timeout_timeout != -1)
-        if (timeout == -1)
-            timeout = timeout_timeout;
-        else
-            if (timeout_timeout < timeout)
-                timeout = timeout_timeout;
+    if (timeout_timeout < timeout)
+        timeout = timeout_timeout;
 
     return timeout;
 }

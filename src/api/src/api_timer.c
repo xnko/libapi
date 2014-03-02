@@ -23,6 +23,20 @@
 
 #include "api_timer.h"
 
+int api_timer_compare(api_rbnode_t* node1, api_rbnode_t* node2)
+{
+    uint64_t value1 = ((api_timer_list_t*)node1)->value;
+    uint64_t value2 = ((api_timer_list_t*)node2)->value;
+
+    if (value1 < value2)
+        return -1;
+
+    if (value1 > value2)
+        return 1;
+
+    return 0;
+}
+
 void api_timer_add(api_timers_t* timers, api_timer_list_t* list,
                     api_timer_t* timer, api_timer_type_t type)
 {
@@ -40,8 +54,8 @@ void api_timer_add(api_timers_t* timers, api_timer_list_t* list,
 void api_timer_set(api_timers_t* timers, api_timer_t* timer,
                     api_timer_type_t type, uint64_t value)
 {
-    api_timer_list_t* list;
-    api_timer_list_t* temp;
+    api_timer_list_t list;
+    api_timer_list_t* found;
 
     /* handle is registered */
     if (timer->list != 0)
@@ -56,13 +70,14 @@ void api_timer_set(api_timers_t* timers, api_timer_t* timer,
             return;
         }
 
-        /* remove empty list */
+        /* remove empty list ? */
         if (timer->list->head == 0)
         {
-            api_list_remove((api_list_t*)&timers->head,
-                            (api_node_t*)timer->list);
-
-            api_free(timers->pool, sizeof(*timer->list), timer->list);
+            if (timers->processing == 0)
+            {
+                api_rbtree_remove(&timers->root, &timer->list->node, api_timer_compare);
+                api_free(timers->pool, sizeof(*timer->list), timer->list);
+            }
         }
 
         timer->list = 0;
@@ -73,66 +88,19 @@ void api_timer_set(api_timers_t* timers, api_timer_t* timer,
         return;
 
     /* find or create list with matching value */
-    list = timers->head;
-    if (list == 0 || value < list->value)
+
+    list.value = value;
+    found = (api_timer_list_t*)api_rbtree_search(timers->root, &list.node, api_timer_compare);
+    if (found == 0)
     {
-        /* create new list and push to timers head */
+        found = (api_timer_list_t*)api_alloc(timers->pool, sizeof(*found));
+        memset(found, 0, sizeof(*found));
+        found->value = value;
 
-        list = (api_timer_list_t*)api_alloc(timers->pool, sizeof(*list));
-        memset(list, 0, sizeof(*list));
-        list->value = value;
-
-        api_list_push_head((api_list_t*)&timers->head, (api_node_t*)list);
-    }
-    else
-    {
-        while (list->next)
-        {
-            if (list->next->value < value)
-                list = list->next;
-            else
-                break;
-        }
-
-        if (list->value != value)
-        {
-            if (list->next)
-            {
-                if (list->next->value == value)
-                {
-                    /* found */
-                    list = list->next;
-                }
-                else
-                {
-                    /* create new list add after list */
-                    temp = 
-                        (api_timer_list_t*)api_alloc(timers->pool, sizeof(*temp));
-                    memset(temp, 0, sizeof(*temp));
-                    temp->value = value;
-
-                    temp->prev = list;
-                    temp->next = list->next;
-                    list->next->prev = temp;
-                    list->next = temp;
-                    list = temp;
-                }
-            }
-            else
-            {
-                /* create new list push to timers tail  */
-
-                list =
-                    (api_timer_list_t*)api_alloc(timers->pool, sizeof(*list));
-                memset(list, 0, sizeof(*list));
-                list->value = value;
-
-                api_list_push_tail((api_list_t*)&timers->head, (api_node_t*)list);
-            }
-        }
+        api_rbtree_insert(&timers->root, &found->node, api_timer_compare);
     }
 
-    api_timer_add(timers, list, timer, type);
+    api_timer_add(timers, found, timer, type);
 }
 
 int api_sleep_exec(api_timers_t* timers, api_task_t* task, uint64_t value)
@@ -189,7 +157,7 @@ int api_timeout_exec(api_timers_t* timers, api_timer_t* timer, uint64_t value)
  */
 int api_timer_process(api_timers_t* timers, api_timer_type_t type, uint64_t value)
 {
-    api_timer_list_t* list = timers->head;
+    api_timer_list_t* list = (api_timer_list_t*)api_rbtree_first(timers->root);
     api_timer_list_t* next;
     api_timer_t* timer;
     api_timer_t* temp;
@@ -197,9 +165,11 @@ int api_timer_process(api_timers_t* timers, api_timer_type_t type, uint64_t valu
     int elapsed = 0;
     int count = 0;
 
+    timers->processing = 1;
+
     while (list != 0)
     {
-        next = list->next;
+        next = (api_timer_list_t*)api_rbtree_next(&list->node);
 
         timer = list->head;
         while (timer != 0)
@@ -246,26 +216,30 @@ int api_timer_process(api_timers_t* timers, api_timer_type_t type, uint64_t valu
         if (list->head == 0)
         {
             /* remove empty list */
-            api_list_remove((api_list_t*)&timers->head, (api_node_t*)list);
+            api_rbtree_remove(&timers->root, &list->node, api_timer_compare);
             api_free(timers->pool, sizeof(*list), list);
         }
 
         list = next;
     }
 
+    timers->processing = 0;
+
     return count;
 }
 
 void api_timer_terminate(api_timers_t* timers)
 {
-    api_timer_list_t* list = timers->head;
+    api_timer_list_t* list = (api_timer_list_t*)api_rbtree_first(timers->root);
     api_timer_list_t* next;
     api_timer_t* timer;
     api_timer_t* temp;
 
+    timers->processing = 1;
+
     while (list != 0)
     {
-        next = list->next;
+        next = (api_timer_list_t*)api_rbtree_next(&list->node);
 
         timer = list->head;
         while (timer != 0)
@@ -284,10 +258,22 @@ void api_timer_terminate(api_timers_t* timers)
         if (list->head == 0)
         {
             /* remove empty list */
-            api_list_remove((api_list_t*)&timers->head, (api_node_t*)list);
+            api_rbtree_remove(&timers->root, &list->node, api_timer_compare);
             api_free(timers->pool, sizeof(*list), list);
         }
 
         list = next;
     }
+
+    timers->processing = 0;
+}
+
+uint64_t api_timers_nearest_event(api_timers_t* timers, uint64_t now)
+{
+    api_timer_list_t* list = (api_timer_list_t*)api_rbtree_first(timers->root);
+
+    if (list)
+        return now - list->head->issued;
+
+    return -1;
 }

@@ -19,70 +19,12 @@
  * IN THE SOFTWARE.
  */
 
-/*
- * Timer requests stored as follows
- *
- * api_timers_t structure stores list of api_timer_list_t by each
- * value in ascending order of value.
- * Each api_timer_list_t stores list of api_timer_t in order of
- * first issued time
- *
- *
- * Algorithm:
- *
- * assume   TS = api_timers_t
- *          TL = api_timer_list_t
- *          TR = api_timer_t
- *
- * set(TS, value) complexity = O(TS.length)
- *
- *      TL = null
- *      if (value < TS.head.value) {
- *          TL = create new
- *          insert TL into TS.head
- *      } else {
- *          TL = TS.head;
- *          while (TL != null && value < TL.value)
- *              TL = TL.next;
- *      }
- *
- *      if (TL == null) {
- *          TL = create new
- *          insert TL into TS.tail
- *      }
- *	
- *      insert TR into TL.tail
- *
- *
- * reset(TR) complexity = O(1)
- *
- *      remove TR from TR.list and
- *      insert into TR.list.tail
- *
- *
- * remove(TR) complexity = O(1)
- *
- *      remove TR from TR.list
- *
- *
- * process(TS) complexity = O(count of fired TR)
- *
- *      iterate over TL
- *          iterate over TR
- *              if TR elapsed then fire
- *              else exit process
- *
- *
- * For little amount of various timer values (not amount of timer requests)
- * this is better case for performance. For example an application doing any
- * number of timer requests but in values of 10 sec, 20 sec 1 min and 1 hour.
- */
-
 #ifndef API_TIMER_H_INCLUDED
 #define API_TIMER_H_INCLUDED
 
 #include "../include/api.h"
 #include "api_task.h"
+#include "api_rbtree.h"
 
 typedef enum api_timer_type_t {
     TIMER_Sleep,
@@ -101,18 +43,17 @@ typedef struct api_timer_t {
 } api_timer_t;
 
 typedef struct api_timer_list_t {
-    struct api_timer_list_t* next;
-    struct api_timer_list_t* prev;
+    api_rbnode_t node;
     api_timer_t* head;
     api_timer_t* tail;
     uint64_t value;
 } api_timer_list_t;
 
 typedef struct api_timers_t {
-    api_timer_list_t* head;
-    api_timer_list_t* tail;
+    api_rbnode_t* root;
     api_pool_t* pool;
     uint64_t version;
+    int processing;
 } api_timers_t;
 
 void api_timer_set(api_timers_t* timers, api_timer_t* timer,
@@ -128,5 +69,7 @@ int api_timeout_exec(api_timers_t* timers, api_timer_t* timer, uint64_t value);
  */
 int api_timer_process(api_timers_t* timers, api_timer_type_t type, uint64_t value);
 void api_timer_terminate(api_timers_t* timers);
+
+uint64_t api_timers_nearest_event(api_timers_t* timers, uint64_t now);
 
 #endif // API_TIMER_H_INCLUDED

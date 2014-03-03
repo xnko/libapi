@@ -330,12 +330,10 @@ size_t api_stream_on_write(struct api_filter_t* filter,
 
 void api_stream_on_read_timeout(struct api_filter_t* filter)
 {
-    api_stream_close(filter->stream);
 }
 
 void api_stream_on_write_timeout(struct api_filter_t* filter)
 {
-    api_stream_close(filter->stream);
 }
 
 void api_stream_on_error(struct api_filter_t* filter, int code)
@@ -400,18 +398,38 @@ void api_stream_processor(void* e, DWORD transferred,
     api_stream_t* stream = 
         (api_stream_t*)((char*)e - offsetof(api_stream_t, os_win));
     api_stream_req_t* req;
+    int is_read = 0;
 
     if (overlapped == &stream->os_win.read)
     {
         req = (api_stream_req_t*)stream->os_win.reserved[0];
+        is_read = 1;
     }
     else
     {
         req = (api_stream_req_t*)stream->os_win.reserved[1];
+        is_read = 0;
     }
 
-    req->done = transferred;
-    api_task_wakeup(req->task);
+    /* we cannot remove handle from iocp on timeout, so handle it here and
+     * just ignore when timeout happened on a stream
+     */
+    if (req)
+    {
+        if (is_read)
+        {
+            if (stream->status.read_timeout)
+                return;
+        }
+        else
+        {
+            if (stream->status.write_timeout)
+                return;
+        }
+
+        req->done = transferred;
+        api_task_wakeup(req->task);
+    }
 }
 
 void api_stream_init(api_stream_t* stream, api_stream_type_t type, fd_t fd)

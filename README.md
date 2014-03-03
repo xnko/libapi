@@ -1,6 +1,6 @@
 # libapi
 
-libapi is a cross platform high performance io library written in c. It
+libapi is a cross platform high performance io library written in C. It
 provides ability to write event driven servers and applications
 with continous code.
 
@@ -82,9 +82,3 @@ not justified and memory consumed.
 In case when task needs more stack api_loop_call was designed.
 
 The question is how grow up stack automatically on demand ?
-
-### Visual Studio Debugger
-
-On Windows under Visual Studio Debug session sometimes tasks curropting,
-due to thread context switches by app and also by debugger.
-No Problem occures in Release mode.

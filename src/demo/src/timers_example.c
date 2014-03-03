@@ -22,8 +22,9 @@ void timer(api_loop_t* loop, void* arg)
 
 void idle(api_loop_t* loop, void* arg)
 {
-    api_loop_post(loop, timer, "timer one", 0);
-    api_loop_post(loop, timer, "timer two", 0);
+    /* printf requires more stack */
+    api_loop_post(loop, timer, "timer one", 100 * 1024);
+    api_loop_post(loop, timer, "timer two", 100 * 1024);
 
     while (1)
     {
@@ -36,7 +37,8 @@ int main(int argc, char *argv[])
 {
     api_init();
 
-    if (API_OK != api_loop_run(idle, 0, 0))
+    /* printf requires more stack */
+    if (API_OK != api_loop_run(idle, 0, 100 * 1024))
     {
         return 1;
     }

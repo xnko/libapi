@@ -6,7 +6,7 @@ with continous code.
 
 ## Preface
 
-Writing event driven code in c is hard, and is harder to maintain.
+Writing event driven code in C is hard, and is harder to maintain.
 
 There are libraries providing high level abstractions in this area,
 one of bests is a popular [libuv](https://github.com/joyent/libuv).
@@ -68,6 +68,7 @@ see [libapi/include/api.h](https://github.com/xnko/libapi/blob/master/src/api/in
 ## Community
 
 [Mailing list](https://groups.google.com/forum/#!forum/libapigroup)
+[Reddit](http://redd.it/1zezf2)
 
 ## Problems
 

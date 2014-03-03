@@ -67,8 +67,8 @@ see [libapi/include/api.h](https://github.com/xnko/libapi/blob/master/src/api/in
 
 ## Community
 
-[Mailing list](https://groups.google.com/forum/#!forum/libapigroup)
-[Reddit](http://redd.it/1zezf2)
+* [Mailing list](https://groups.google.com/forum/#!forum/libapigroup)
+* [Reddit](http://redd.it/1zezf2)
 
 ## Problems
 

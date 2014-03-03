@@ -79,7 +79,7 @@ void api_wait_notify(struct api_loop_t* loop)
     {
         next = wait->next;
 
-        if (!PostQueuedCompletionStatus(wait->from, 0,
+        if (!PostQueuedCompletionStatus(wait->from->iocp, 0,
             (ULONG_PTR)&g_api_wait_notifier, (LPOVERLAPPED)wait))
         {
             //return api_error_translate(GetLastError());

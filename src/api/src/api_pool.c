@@ -38,6 +38,14 @@ void* api_alloc(api_pool_t* pool, size_t size)
     return malloc(size);
 }
 
+void* api_calloc(api_pool_t* pool, size_t size)
+{
+    void* ptr = api_alloc(pool, size);
+
+    memset(ptr, 0, size);
+    return ptr;
+}
+
 /* size parameter can be hint for memory manager */
 void api_free(api_pool_t* pool, size_t size, void* ptr)
 {

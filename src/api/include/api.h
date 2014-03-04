@@ -300,6 +300,7 @@ API_EXTERN api_pool_t* api_pool_default(api_loop_t* loop);
  * Not thread safe, call for loop in wich caller executes
  */
 API_EXTERN void* api_alloc(api_pool_t* pool, size_t size);
+API_EXTERN void* api_calloc(api_pool_t* pool, size_t size);
 API_EXTERN void api_free(api_pool_t* pool, size_t size, void* ptr);
 
 
@@ -410,22 +411,20 @@ API_EXTERN int api_stream_attach(api_stream_t* stream, api_loop_t* loop);
 
 /*
  * Read from stream.
- * Returns amount of bytes readed or 0 on failure, in this case check
- * stream.status fields for failure reason
+ * Returns amount of bytes readed, check stream.status fields for failure reason
  */
 API_EXTERN size_t api_stream_read(api_stream_t* stream, char* buffer, size_t length);
 
 /*
  * Read from stream until failure or 'length' bytes readed.
- * Returns amount of bytes readed or 0 on failure, in this case check
- * stream.status fields for failure reason
+ * Returns amount of bytes readed, check stream.status fields for failure reason
  */
 API_EXTERN size_t api_stream_read_exact(api_stream_t* stream, char* buffer, size_t length);
 
 /*
  * Put data back to stream for further read.
- * Helpfull if multiple parsers will be executed in a sequense manner.
- * If there is data already unreaded then it will be overwritten
+ * Helpfull if multiple parsers will be executed by a sequense manner.
+ * If there is data already unreaded it will be overwritten
  */
 API_EXTERN size_t api_stream_unread(api_stream_t* stream,
                                     const char* buffer, size_t length);

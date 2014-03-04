@@ -413,8 +413,14 @@ API_EXTERN int api_stream_attach(api_stream_t* stream, api_loop_t* loop);
  * Returns amount of bytes readed or 0 on failure, in this case check
  * stream.status fields for failure reason
  */
-API_EXTERN size_t api_stream_read(api_stream_t* stream,
-                                    char* buffer, size_t length);
+API_EXTERN size_t api_stream_read(api_stream_t* stream, char* buffer, size_t length);
+
+/*
+ * Read from stream until failure or 'length' bytes readed.
+ * Returns amount of bytes readed or 0 on failure, in this case check
+ * stream.status fields for failure reason
+ */
+API_EXTERN size_t api_stream_read_exact(api_stream_t* stream, char* buffer, size_t length);
 
 /*
  * Put data back to stream for further read.

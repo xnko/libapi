@@ -42,7 +42,8 @@ void* api_exec_task_fn(api_task_t* task)
 }
 
 void api_async_processor(struct os_win_t* e, DWORD transferred,
-                        OVERLAPPED* overlapped, api_loop_t* loop)
+                        OVERLAPPED* overlapped, api_loop_t* loop,
+                        DWORD error)
 {
     api_async_t* async = (api_async_t*)overlapped;
 

@@ -310,7 +310,7 @@ size_t api_stream_on_write(struct api_filter_t* filter,
 
         offset += (size_t)write.done;
     }
-    while (offset < length);
+    while (offset < length && write.done > 0);
 
     if (timeout_value > 0)
         api_timeout_exec(&stream->loop->timeouts, &timeout, 0);
@@ -393,7 +393,8 @@ void api_filter_on_terminate(api_filter_t* filter)
 }
 
 void api_stream_processor(void* e, DWORD transferred,
-                          OVERLAPPED* overlapped, struct api_loop_t* loop)
+                          OVERLAPPED* overlapped, struct api_loop_t* loop,
+                          DWORD error)
 {
     api_stream_t* stream = 
         (api_stream_t*)((char*)e - offsetof(api_stream_t, os_win));
@@ -428,6 +429,14 @@ void api_stream_processor(void* e, DWORD transferred,
         }
 
         req->done = transferred;
+        if (transferred == 0)
+        {
+            if (error == ERROR_HANDLE_EOF)
+                stream->status.eof = 1;
+            else
+                stream->status.error = api_error_translate(error);
+        }
+
         api_task_wakeup(req->task);
     }
 }

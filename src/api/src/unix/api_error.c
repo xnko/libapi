@@ -41,6 +41,7 @@ int api_error_translate(int error)
     case ENOTTY:    return API__NOT_TYPEWRITER;
     case ENOSPC:    return API__NO_SPACE;
     case EADDRINUSE:return API__ADDRESS_IN_USE;
+    case ETIMEDOUT: return API__TIMEDOUT;
     }
 
     return error;

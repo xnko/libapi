@@ -40,8 +40,8 @@
 #define	API__TOO_MANY_FILES         EMFILE
 #define	API__NOT_TYPEWRITER         ENOTTY
 #define	API__NO_SPACE               ENOSPC
-
 #define	API__ADDRESS_IN_USE         EADDRINUSE
+#define	API__TIMEDOUT               ETIMEDOUT
 
 #define	API__TERMINATE              10000 /* not sure */
 

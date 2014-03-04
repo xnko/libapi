@@ -26,7 +26,8 @@ static struct os_win_t g_api_wait_processor;
 static struct os_win_t g_api_wait_notifier;
 
 void api_wait_processor(struct os_win_t* e, DWORD transferred,
-                        OVERLAPPED* overlapped, struct api_loop_t* loop)
+                        OVERLAPPED* overlapped, struct api_loop_t* loop,
+                        DWORD error)
 {
     api_wait_t* wait = (api_wait_t*)overlapped;
 
@@ -35,7 +36,8 @@ void api_wait_processor(struct os_win_t* e, DWORD transferred,
 }
 
 void api_wait_notifier(struct os_win_t* e, DWORD transferred,
-                       OVERLAPPED* overlapped, struct api_loop_t* loop)
+                       OVERLAPPED* overlapped, struct api_loop_t* loop,
+                       DWORD error)
 {
     api_wait_t* wait = (api_wait_t*)overlapped;
     api_task_wakeup(wait->task);

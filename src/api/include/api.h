@@ -58,7 +58,8 @@ extern "C" {
     XX(TOO_MANY_FILES, "too many open files")                                 \
     XX(NOT_TYPEWRITER, "not a typewriter")                                    \
     XX(NO_SPACE, "no space left on device")                                   \
-    XX(TERMINATE, "terminate")
+    XX(TERMINATE, "terminate")                                                \
+    XX(TIMEDOUT, "timed out")
 
 typedef enum {
 #define XX(code, _) API_ ## code = API__ ## code,
@@ -149,8 +150,8 @@ typedef struct api_stream_t {
     } os_linux;
 #else
     struct {
-        void(*processor)(void* e, DWORD transferred, 
-                            OVERLAPPED* overlapped, struct api_loop_t* loop);
+        void(*processor)(void* e, DWORD transferred, OVERLAPPED* overlapped,
+                            struct api_loop_t* loop, DWORD error);
         OVERLAPPED read;
         OVERLAPPED write;
         void* reserved[2];
@@ -228,8 +229,8 @@ typedef struct api_tcp_listener_t {
     } os_linux;
 #else
     struct {
-        void(*processor)(void* e, DWORD transferred,
-                            OVERLAPPED* overlapped, struct api_loop_t* loop);
+        void(*processor)(void* e, DWORD transferred, OVERLAPPED* overlapped,
+                            struct api_loop_t* loop, DWORD error);
         OVERLAPPED ovl;
         void* reserved;
         int af;

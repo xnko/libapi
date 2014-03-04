@@ -50,7 +50,8 @@ void api_tcp_listener_on_terminate(struct api_tcp_listener_t* listener)
 }
 
 void api_tcp_listener_processor(void* e, DWORD transferred,
-                            OVERLAPPED* overlapped, struct api_loop_t* loop)
+                            OVERLAPPED* overlapped, struct api_loop_t* loop,
+                            DWORD error)
 {
     api_tcp_listener_t* listener = 
         (api_tcp_listener_t*)((char*)e - offsetof(api_tcp_listener_t, os_win));
@@ -265,7 +266,8 @@ int api_tcp_close(api_tcp_listener_t* listener)
 }
 
 void api_tcp_connect_processor(void* e, DWORD transferred,
-                            OVERLAPPED* overlapped, struct api_loop_t* loop)
+                            OVERLAPPED* overlapped, struct api_loop_t* loop,
+                            DWORD error)
 {
     api_stream_t* stream = 
         (api_stream_t*)((char*)e - offsetof(api_stream_t, os_win));

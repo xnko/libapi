@@ -146,33 +146,19 @@ int api_loop_run_internal(api_loop_t* loop)
             if (overlapped != NULL)
             {
                 /*
-                 * Overlapped 'ReadFile' request issues this kind of behavior
-                 * when there are no more data to read.
-                 * So assume this is not an failure
+                 * Eof or Connection was closed
                  */
-                if (error == ERROR_HANDLE_EOF)
+                if (transfered == 0)
                 {
                     failed = 0;
                 }
-                else if (error == ERROR_CONNECTION_ABORTED)
-                {
-                    failed = 0;
-                    key = 0;
-                }
-            }
-        }
-        else
-        {
-            if (overlapped != NULL && transfered == 0)
-            {
-                int closed = 1;
             }
         }
 
         if (!failed && key != 0)
         {
             win = (os_win_t*)key;
-            win->processor(win, transfered, overlapped, loop);
+            win->processor(win, transfered, overlapped, loop, error);
             loop->now = api_time_current();
             loop->last_activity = loop->now;
         }

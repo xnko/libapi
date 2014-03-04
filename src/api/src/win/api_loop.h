@@ -33,7 +33,7 @@
 
 typedef struct os_win_t {
     void(*processor)(struct os_win_t* e, DWORD transferred,
-                    OVERLAPPED* overlapped, struct api_loop_t* loop);
+                    OVERLAPPED* overlapped, struct api_loop_t* loop, DWORD error);
 } os_win_t;
 
 typedef struct api_loop_t {

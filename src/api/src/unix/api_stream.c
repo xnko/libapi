@@ -743,6 +743,9 @@ size_t api_stream_unread(api_stream_t* stream,
     if (length == 0)
         return length;
 
+    if (stream->unread.length > 0)
+        api_free(api_pool_default(stream->loop), stream->unread.length, stream->unread.buffer);
+
     stream->unread.buffer =
         (char*)api_alloc(api_pool_default(stream->loop), length);
     stream->unread.length = length;

@@ -88,10 +88,9 @@ void api_task_swapcontext(api_task_t* current, api_task_t* other)
 	
     /* save/restore system error codes across task switches */
 
-#if defined(__linux__)
     int error = errno;
-#else
-    DWORD error = GetLastError();
+#if !defined(__linux__)
+    DWORD win_error = GetLastError();
 #endif
 
     scheduler->prev = current;
@@ -109,10 +108,9 @@ void api_task_swapcontext(api_task_t* current, api_task_t* other)
         scheduler->prev = 0;
     }
 
-#if defined(__linux__)
     errno = error;
-#else
-    SetLastError(error);
+#if !defined(__linux__)
+    SetLastError(win_error);
 #endif
 }
 #if !defined(__linux__)

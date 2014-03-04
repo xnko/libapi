@@ -27,7 +27,7 @@ void* api_async_task_fn(api_task_t* task)
 {
     api_async_t* async = (api_async_t*)task->data;
     async->callback(async->loop, async->arg);
-    api_free(&async->loop->pool, sizeof(*async), async);
+    api_free(&async->loop->base.pool, sizeof(*async), async);
 
     return 0;
 }
@@ -48,11 +48,11 @@ void api_async_post_handler(api_loop_t* loop, struct api_async_t* async,
     /* handle terminate */
     if (events == -1)
     {
-        api_free(&async->loop->pool, sizeof(*async), async);
+        api_free(&async->loop->base.pool, sizeof(*async), async);
     }
     else
     {
-        task = api_task_create(&loop->scheduler, api_async_task_fn,
+        task = api_task_create(&loop->base.scheduler, api_async_task_fn,
                             async->stack_size);
         task->data = async;
         api_task_post(task);
@@ -86,7 +86,7 @@ void api_async_exec_handler(api_loop_t* loop, struct api_async_t* async,
     }
     else
     {
-        task = api_task_create(&loop->scheduler, api_exec_task_fn,
+        task = api_task_create(&loop->base.scheduler, api_exec_task_fn,
                                 async->stack_size);
         task->data = async;
         api_task_exec(task);
@@ -177,7 +177,7 @@ int api_async_post(api_loop_t* loop,
                    api_loop_fn callback, void* arg, size_t stack_size)
 {
     api_async_t* async =
-        (api_async_t*)api_alloc(&loop->pool, sizeof(api_async_t));
+        (api_async_t*)api_alloc(&loop->base.pool, sizeof(api_async_t));
 
     if (async == 0)
     {
@@ -204,7 +204,7 @@ int api_async_post(api_loop_t* loop,
 int api_async_wakeup(api_loop_t* loop, api_task_t* task)
 {
     api_async_t* async =
-        (api_async_t*)api_alloc(&loop->pool, sizeof(api_async_t));
+        (api_async_t*)api_alloc(&loop->base.pool, sizeof(api_async_t));
 
     if (async == 0)
     {
@@ -237,7 +237,7 @@ int api_async_exec(api_loop_t* current, api_loop_t* loop,
     exec.async.arg = arg;
     exec.async.stack_size = stack_size;
     exec.loop = current;
-    exec.task = current->scheduler.current;
+    exec.task = current->base.scheduler.current;
     exec.result = 0;
 
     api_mpscq_push(&loop->asyncs.queue, &exec.async.node);
@@ -247,7 +247,7 @@ int api_async_exec(api_loop_t* current, api_loop_t* loop,
         /* handle error */
     }
 
-    api_task_sleep(current->scheduler.current);
+    api_task_sleep(current->base.scheduler.current);
 
     return exec.result;
 }

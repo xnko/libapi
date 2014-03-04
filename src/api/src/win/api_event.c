@@ -58,17 +58,17 @@ int api_event_wait(api_event_t* ev, uint64_t timeout)
         if (timeout > 0)
         {
             memset(&timer, 0, sizeof(timer));
-            timer.task = ev->loop->scheduler.current;
+            timer.task = ev->loop->base.scheduler.current;
 
-            api_timeout_exec(&ev->loop->timeouts, &timer, timeout);
+            api_timeout_exec(&ev->loop->base.timeouts, &timer, timeout);
         }
 
-        ev->reserved = ev->loop->scheduler.current;
-        api_task_sleep(ev->loop->scheduler.current);
-        ev->loop->scheduler.current = 0;
+        ev->reserved = ev->loop->base.scheduler.current;
+        api_task_sleep(ev->loop->base.scheduler.current);
+        ev->loop->base.scheduler.current = 0;
 
         if (timeout > 0)
-            api_timeout_exec(&ev->loop->timeouts, &timer, 0);
+            api_timeout_exec(&ev->loop->base.timeouts, &timer, 0);
 
         if (timeout > 0 && timer.elapsed)
             return api_error_translate(ETIMEDOUT);

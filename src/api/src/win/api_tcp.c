@@ -74,7 +74,7 @@ int api_tcp_listen(api_tcp_listener_t* listener, api_loop_t* loop,
     DWORD sys_error = 0;
     int error;
 
-    if (loop->terminated)
+    if (loop->base.terminated)
     {
         listener->status.terminated = 1;
         return API__TERMINATE;
@@ -171,7 +171,7 @@ int api_tcp_accept(api_tcp_listener_t* listener, api_tcp_t* tcp)
 
     memset(&listener->os_win.ovl, 0, sizeof(listener->os_win.ovl));
 
-    if (listener->loop->terminated)
+    if (listener->loop->base.terminated)
         return API__TERMINATE;
 
     if (listener->status.closed ||
@@ -179,7 +179,7 @@ int api_tcp_accept(api_tcp_listener_t* listener, api_tcp_t* tcp)
         listener->status.error != API__OK)
         return listener->status.error;
 
-    accept.task = listener->loop->scheduler.current;
+    accept.task = listener->loop->base.scheduler.current;
 
     listener->os_win.reserved = &accept;
 
@@ -298,14 +298,14 @@ int api_tcp_connect(api_tcp_t* tcp,
 
     memset(tcp, 0, sizeof(*tcp));
 
-    if (loop->terminated)
+    if (loop->base.terminated)
     {
         tcp->stream.status.terminated = 1;
         return API__TERMINATE;
     }
 
     tcp->stream.os_win.processor = api_tcp_connect_processor;
-    tcp->stream.os_win.reserved[0] = loop->scheduler.current;
+    tcp->stream.os_win.reserved[0] = loop->base.scheduler.current;
 
     if (strchr(ip, ':') == 0)
     {
@@ -376,9 +376,9 @@ int api_tcp_connect(api_tcp_t* tcp,
     if (timeout_value > 0)
     {
         memset(&timeout, 0, sizeof(timeout));
-        timeout.task = loop->scheduler.current;
+        timeout.task = loop->base.scheduler.current;
 
-        api_timeout_exec(&loop->timeouts, &timeout, timeout_value);
+        api_timeout_exec(&loop->base.timeouts, &timeout, timeout_value);
     }
 
     result = lpfnConnectEx(tcp->stream.fd, a, tcp->address.length,
@@ -406,10 +406,10 @@ int api_tcp_connect(api_tcp_t* tcp,
     }
 
     if (!completed)
-        api_task_sleep(loop->scheduler.current);
+        api_task_sleep(loop->base.scheduler.current);
 
     if (timeout_value > 0)
-        api_timeout_exec(&loop->timeouts, &timeout, 0);
+        api_timeout_exec(&loop->base.timeouts, &timeout, 0);
 
     if (timeout_value > 0 && timeout.elapsed)
     {

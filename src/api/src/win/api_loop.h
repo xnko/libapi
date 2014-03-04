@@ -22,14 +22,9 @@
 #ifndef API_LOOP_H_INCLUDED
 #define API_LOOP_H_INCLUDED
 
-#include "../api_list.h"
-#include "../api_pool.h"
-#include "../api_timer.h"
+#include "../api_loop_base.h"
 #include "api_async.h"
 #include "api_wait.h"
-
-#define API_READ    1
-#define API_WRITE   2
 
 typedef struct os_win_t {
     void(*processor)(struct os_win_t* e, DWORD transferred,
@@ -37,27 +32,19 @@ typedef struct os_win_t {
 } os_win_t;
 
 typedef struct api_loop_t {
+    api_loop_base_t base;
     HANDLE iocp;
-    int terminated;
-    uint64_t refs;
-    struct api_pool_t pool;
-    uint64_t now;
-    uint64_t last_activity;
-    struct api_scheduler_t scheduler;
-    struct api_timers_t sleeps;
-    struct api_timers_t idles;
-    struct api_timers_t timeouts;
     struct api_wait_t* waiters;
 } api_loop_t;
 
 static uint64_t api_loop_ref(api_loop_t* loop)
 {
-    return InterlockedIncrement64((volatile LONGLONG*)&loop->refs);
+    return InterlockedIncrement64((volatile LONGLONG*)&loop->base.refs);
 }
 
 static uint64_t api_loop_unref(api_loop_t* loop)
 {
-    uint64_t refs = InterlockedDecrement64((volatile LONGLONG*)&loop->refs);
+    uint64_t refs = InterlockedDecrement64((volatile LONGLONG*)&loop->base.refs);
 
     if (refs == 0)
     {

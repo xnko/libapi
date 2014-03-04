@@ -56,7 +56,7 @@ int api_wait_exec(struct api_loop_t* current,
     api_wait_t wait;
 
     wait.from = current;
-    wait.task = current->scheduler.current;
+    wait.task = current->base.scheduler.current;
 
     if (!PostQueuedCompletionStatus(loop->iocp, 0, 
         (ULONG_PTR)&g_api_wait_processor, (LPOVERLAPPED)&wait))
@@ -65,7 +65,7 @@ int api_wait_exec(struct api_loop_t* current,
     }
 
     if (sleep)
-        api_task_sleep(current->scheduler.current);
+        api_task_sleep(current->base.scheduler.current);
 
     return API__OK;
 }

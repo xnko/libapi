@@ -24,26 +24,12 @@
 #include "api_error.h"
 #include "api_loop.h"
 
-typedef struct api_call_t {
-    api_loop_t* loop;
-    api_loop_fn callback;
-    void* arg;
-} api_call_t;
-
-void* api_call_task_fn(api_task_t* task)
-{
-    api_call_t* call = (api_call_t*)task->data;
-    call->callback(call->loop, call->arg);
-
-    return 0;
-}
-
 int api_loop_init(api_loop_t* loop)
 {
-    api_pool_init(&loop->pool);
-    loop->sleeps.pool = &loop->pool;
-    loop->idles.pool = &loop->pool;
-    loop->timeouts.pool = &loop->pool;
+    api_pool_init(&loop->base.pool);
+    loop->base.sleeps.pool = &loop->base.pool;
+    loop->base.idles.pool = &loop->base.pool;
+    loop->base.timeouts.pool = &loop->base.pool;
     loop->waiters = 0;
 
     return API__OK;
@@ -51,33 +37,14 @@ int api_loop_init(api_loop_t* loop)
 
 int api_loop_cleanup(api_loop_t* loop)
 {
-    api_timer_terminate(&loop->idles);
-    api_timer_terminate(&loop->sleeps);
-    api_timer_terminate(&loop->timeouts);
+    api_timer_terminate(&loop->base.idles);
+    api_timer_terminate(&loop->base.sleeps);
+    api_timer_terminate(&loop->base.timeouts);
     api_wait_notify(loop);
-    api_scheduler_destroy(&loop->scheduler);
-    api_pool_cleanup(&loop->pool);
+    api_scheduler_destroy(&loop->base.scheduler);
+    api_pool_cleanup(&loop->base.pool);
 
     return API__OK;
-}
-
-uint64_t api_loop_calculate_wait_timeout(api_loop_t* loop)
-{
-    uint64_t timeout = (uint64_t)-1;
-    uint64_t timeout_sleep = api_timers_nearest_event(&loop->sleeps, loop->now);
-    uint64_t timeout_idle = api_timers_nearest_event(&loop->idles, loop->now);
-    uint64_t timeout_timeout = api_timers_nearest_event(&loop->timeouts, loop->now);
-
-    if (timeout_sleep < timeout)
-        timeout = timeout_sleep;
-
-    if (timeout_idle < timeout)
-        timeout = timeout_idle;
-
-    if (timeout_timeout < timeout)
-        timeout = timeout_timeout;
-
-    return timeout;
 }
 
 int api_loop_run_internal(api_loop_t* loop)
@@ -90,27 +57,28 @@ int api_loop_run_internal(api_loop_t* loop)
     BOOL failed;
     os_win_t* win;
 
-    api_scheduler_init(&loop->scheduler);
-    loop->scheduler.pool = &loop->pool;
+    api_scheduler_init(&loop->base.scheduler);
+    loop->base.scheduler.pool = &loop->base.pool;
 	
-    loop->now = api_time_current();
-    loop->last_activity = loop->now;
+    loop->base.now = api_time_current();
+    loop->base.last_activity = loop->base.now;
 
     api_loop_ref(loop);
 
     do
     {
-        if (0 < api_timer_process(&loop->sleeps, TIMER_Sleep, loop->now))
+        if (0 < api_timer_process(&loop->base.sleeps, TIMER_Sleep, loop->base.now))
         {
-            loop->now = api_time_current();
-            loop->last_activity = loop->now;
+            loop->base.now = api_time_current();
+            loop->base.last_activity = loop->base.now;
         }
 
         failed = 0;
         error = 0;
         status = GetQueuedCompletionStatus(loop->iocp, &transfered, &key,
-                    &overlapped, (DWORD)api_loop_calculate_wait_timeout(loop));
-        loop->now = api_time_current();
+            &overlapped, (DWORD)api_loop_calculate_wait_timeout(&loop->base));
+
+        loop->base.now = api_time_current();
 
         if (status == FALSE)
         {
@@ -134,11 +102,11 @@ int api_loop_run_internal(api_loop_t* loop)
                     failed = 0;
                     key = 0;
 
-                    if (0 < api_timer_process(&loop->idles, TIMER_Idle,
-                                        loop->now - loop->last_activity))
+                    if (0 < api_timer_process(&loop->base.idles, TIMER_Idle,
+                                        loop->base.now - loop->base.last_activity))
                     {
-                        loop->now = api_time_current();
-                        loop->last_activity = loop->now;
+                        loop->base.now = api_time_current();
+                        loop->base.last_activity = loop->base.now;
                     }
                 }
             }
@@ -159,14 +127,14 @@ int api_loop_run_internal(api_loop_t* loop)
         {
             win = (os_win_t*)key;
             win->processor(win, transfered, overlapped, loop, error);
-            loop->now = api_time_current();
-            loop->last_activity = loop->now;
+            loop->base.now = api_time_current();
+            loop->base.last_activity = loop->base.now;
         }
 
-        api_timer_process(&loop->timeouts, TIMER_Timeout,
-                loop->now - loop->last_activity);
+        api_timer_process(&loop->base.timeouts, TIMER_Timeout,
+                loop->base.now - loop->base.last_activity);
 
-        loop->now = api_time_current();
+        loop->base.now = api_time_current();
     }
     while (!failed);
 
@@ -286,7 +254,7 @@ int api_loop_stop_and_wait(api_loop_t* current, api_loop_t* loop)
     if (error != API__OK)
         return error;
 
-    api_task_sleep(current->scheduler.current);
+    api_task_sleep(current->base.scheduler.current);
 
     return API__OK;
 }
@@ -306,24 +274,6 @@ int api_loop_exec(api_loop_t* current, api_loop_t* loop,
                   api_loop_fn callback, void* arg, size_t stack_size)
 {
     return api_async_exec(current, loop, callback, arg, stack_size);
-}
-
-int api_loop_call(struct api_loop_t* loop,
-                  api_loop_fn callback, void* arg, size_t stack_size)
-{
-    struct api_call_t call;
-    struct api_task_t* task;
-
-    call.loop = loop;
-    call.callback = callback;
-    call.arg = arg;
-
-    task = api_task_create(&loop->scheduler, api_call_task_fn, stack_size);
-    task->data = &call;
-    api_task_exec(task);
-    api_task_delete(task);
-
-    return API__OK;
 }
 
 int api_loop_run(api_loop_fn callback, void* arg, size_t stack_size)
@@ -365,19 +315,4 @@ int api_loop_run(api_loop_fn callback, void* arg, size_t stack_size)
     }
 
     return api_loop_run_internal(&loop);
-}
-
-int api_loop_sleep(api_loop_t* loop, uint64_t period)
-{
-    return api_sleep_exec(&loop->sleeps, loop->scheduler.current, period);
-}
-
-int api_loop_idle(api_loop_t* loop, uint64_t period)
-{
-    return api_idle_exec(&loop->idles, loop->scheduler.current, period);
-}
-
-api_pool_t* api_pool_default(api_loop_t* loop)
-{
-    return &loop->pool;
 }

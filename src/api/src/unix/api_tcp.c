@@ -165,7 +165,7 @@ int api_tcp_listen(api_tcp_listener_t* listener, api_loop_t* loop,
     struct sockaddr* a = (struct sockaddr*)&listener->address.address;
     int error;
 
-    if (loop->terminated)
+    if (loop->base.terminated)
     {
         listener->status.terminated = 1;
         return API__TERMINATE;
@@ -239,7 +239,7 @@ int api_tcp_accept(api_tcp_listener_t* listener, api_tcp_t* tcp)
 {
     api_tcp_listener_accept_t accept;
 
-    if (listener->loop->terminated)
+    if (listener->loop->base.terminated)
         return API__TERMINATE;
 
     if (listener->status.closed ||
@@ -247,7 +247,7 @@ int api_tcp_accept(api_tcp_listener_t* listener, api_tcp_t* tcp)
         listener->status.error != API__OK)
         return listener->status.error;
 
-    accept.task = listener->loop->scheduler.current;
+    accept.task = listener->loop->base.scheduler.current;
     accept.tcp = tcp;
     accept.success = 0;
 
@@ -327,14 +327,14 @@ int api_tcp_connect(api_tcp_t* tcp,
 
     memset(tcp, 0, sizeof(*tcp));
 
-    if (loop->terminated)
+    if (loop->base.terminated)
     {
         tcp->stream.status.terminated = 1;
         return API__TERMINATE;
     }
 
     tcp->stream.os_linux.processor = api_tcp_connect_processor;
-    tcp->stream.os_linux.reserved[0] = loop->scheduler.current;
+    tcp->stream.os_linux.reserved[0] = loop->base.scheduler.current;
     tcp->stream.os_linux.e.data.ptr = &tcp->stream.os_linux;
 
     if (strchr(ip, ':') == 0)
@@ -399,16 +399,16 @@ int api_tcp_connect(api_tcp_t* tcp,
                     if (timeout_value > 0)
                     {
                         memset(&timeout, 0, sizeof(timeout));
-                        timeout.task = loop->scheduler.current;
+                        timeout.task = loop->base.scheduler.current;
 
-                        api_timeout_exec(&loop->timeouts, &timeout,
+                        api_timeout_exec(&loop->base.timeouts, &timeout,
                                                     timeout_value);
                     }
 
-                    api_task_sleep(loop->scheduler.current);
+                    api_task_sleep(loop->base.scheduler.current);
 
                     if (timeout_value > 0)
-                        api_timeout_exec(&loop->timeouts, &timeout, 0);
+                        api_timeout_exec(&loop->base.timeouts, &timeout, 0);
 
                     if (timeout_value > 0 && timeout.elapsed)
                     {

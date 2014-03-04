@@ -19,47 +19,35 @@
  * IN THE SOFTWARE.
  */
 
-#include "api_wait.h"
+#ifndef API_LOOP_BASE_H_INCLUDED
+#define API_LOOP_BASE_H_INCLUDED
 
-void api_wait_handler(api_loop_t* loop, api_wait_t* wait, int events)
-{
-    api_task_wakeup(wait->task);
-}
+#include "api_list.h"
+#include "api_pool.h"
+#include "api_timer.h"
 
-void api_wait_init(api_loop_t* loop)
-{
-    api_mpscq_create(&loop->waiters);
-}
+#define API_READ    1
+#define API_WRITE   2
 
-void api_wait_exec(api_loop_t* current, api_loop_t* loop, int sleep)
-{
-    api_wait_t wait;
+/*
+ * Common system independent loop properties
+ */
+typedef struct api_loop_base_t {
+    int terminated;
+    uint64_t refs;
+    struct api_pool_t pool;
+    uint64_t now;
+    uint64_t last_activity;
+    struct api_scheduler_t scheduler;
+    struct api_timers_t sleeps;
+    struct api_timers_t idles;
+    struct api_timers_t timeouts;
+} api_loop_base_t;
 
-    wait.from = current;
-    wait.to = loop;
-    wait.task = current->base.scheduler.current;
+/*
+ * Returns interval in milliseconds from now when no timer operation registered.
+ * -1 if no timers registered
+ */
+uint64_t api_loop_calculate_wait_timeout(api_loop_base_t* loop);
 
-    api_mpscq_push(&loop->waiters, &wait.node);
-
-    if (sleep)
-        api_task_sleep(current->base.scheduler.current);
-}
-
-void api_wait_notify(api_loop_t* loop)
-{
-    api_wait_t* wait = 0;
-    int error = 0;
-
-    wait = (api_wait_t*)api_mpscq_pop(&loop->waiters);
-    while (wait != 0)
-    {
-        wait->handler = api_wait_handler;
-        api_mpscq_push(&wait->from->asyncs.queue, &wait->node);
-        if (-1 == eventfd_write(wait->from->asyncs.fd, 1))
-        {
-            /* handle error */
-        }
-
-        wait = (api_wait_t*)api_mpscq_pop(&loop->waiters);
-    }
-}
+#endif // API_LOOP_BASE_H_INCLUDED

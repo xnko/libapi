@@ -24,26 +24,13 @@
 
 #include <malloc.h>
 
-#include "../api_list.h"
-#include "../api_pool.h"
+#include "../api_loop_base.h"
 #include "../api_task.h"
-#include "../api_timer.h"
 #include "api_mpscq.h"
 
-#define API_READ    1
-#define API_WRITE   2
-
 typedef struct api_loop_t {
+    api_loop_base_t base;
     int epoll;
-    int terminated;
-    uint64_t refs;
-    api_pool_t pool;
-    uint64_t now;
-    uint64_t last_activity;
-    api_scheduler_t scheduler;
-    api_timers_t sleeps;
-    api_timers_t idles;
-    api_timers_t timeouts;
     api_mpscq_t waiters;
     struct {
         void(*processor)(void* asyncs, int events);
@@ -53,8 +40,7 @@ typedef struct api_loop_t {
     } asyncs;
 } api_loop_t;
 
-static int api_loop_update(api_loop_t* loop, int fd, struct epoll_event* e,
-                           int events)
+static int api_loop_update(api_loop_t* loop, int fd, struct epoll_event* e, int events)
 {
     int error;
     e->events = EPOLLERR | EPOLLHUP | EPOLLRDHUP;
@@ -106,12 +92,12 @@ static int api_loop_write_del(api_loop_t* loop, int fd, struct epoll_event* e)
 
 static uint64_t api_loop_ref(api_loop_t* loop)
 {
-    return __sync_add_and_fetch(&loop->refs, 1);
+    return __sync_add_and_fetch(&loop->base.refs, 1);
 }
 
 static uint64_t api_loop_unref(api_loop_t* loop)
 {
-    uint64_t refs = __sync_sub_and_fetch(&loop->refs, 1);
+    uint64_t refs = __sync_sub_and_fetch(&loop->base.refs, 1);
 
     if (refs == 0)
     {

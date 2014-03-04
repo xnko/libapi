@@ -59,26 +59,6 @@ typedef struct api_stream_file_write_t {
     int error;
 } api_stream_file_write_t;
 
-/* used in api_stream_transfer */
-typedef struct api_buffer_t {
-    struct api_buffer_t* next;
-    struct api_buffer_t* prev;
-    char*	buffer;
-    size_t	used;
-} api_buffer_t;
-
-/* data for api_stream_transfer */
-typedef struct api_transfer_t {
-    api_stream_t* src;
-    api_list_t buffers;
-    api_task_t* writer;
-    size_t chunk_size;
-    int read_done;
-    int write_done;
-    int num_wakeup_req;
-    int num_wakeup_done;
-} api_transfer_t;
-
 void api_stream_read_try(struct api_stream_t* stream)
 {
     api_stream_read_t* data = (api_stream_read_t*)stream->os_linux.reserved[0];
@@ -133,7 +113,7 @@ size_t api_stream_on_read(struct api_filter_t* filter,
     api_stream_t* stream = filter->stream;
     api_stream_read_t read;
     api_timer_t timeout;
-    uint64_t now = stream->loop->now;
+    uint64_t now = stream->loop->base.now;
     uint64_t timeout_value = stream->read_timeout;
 
     if (length == 0)
@@ -150,7 +130,7 @@ size_t api_stream_on_read(struct api_filter_t* filter,
     read.buffer = buffer;
     read.length = length;
     read.done = 0;
-    read.task = stream->loop->scheduler.current;
+    read.task = stream->loop->base.scheduler.current;
 
     stream->os_linux.reserved[0] = &read;
 
@@ -159,7 +139,7 @@ size_t api_stream_on_read(struct api_filter_t* filter,
         memset(&timeout, 0, sizeof(timeout));
         timeout.task = read.task;
 
-        api_timeout_exec(&stream->loop->timeouts, &timeout, timeout_value);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
 
     api_loop_read_add(stream->loop, stream->fd, &stream->os_linux.e);
@@ -169,11 +149,11 @@ size_t api_stream_on_read(struct api_filter_t* filter,
     api_loop_read_del(stream->loop, stream->fd, &stream->os_linux.e);
 
     if (timeout_value > 0)
-        api_timeout_exec(&stream->loop->timeouts, &timeout, 0);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->os_linux.reserved[0] = 0;
     stream->read_bandwidth.read += read.done;
-    stream->read_bandwidth.period += (stream->loop->now - now);
+    stream->read_bandwidth.period += (stream->loop->base.now - now);
 
     if (timeout_value > 0 && timeout.elapsed)
     {
@@ -194,7 +174,7 @@ size_t api_stream_on_write(struct api_filter_t* filter,
     api_stream_t* stream = filter->stream;
     api_stream_write_t write;
     api_timer_t timeout;
-    uint64_t now = stream->loop->now;
+    uint64_t now = stream->loop->base.now;
     uint64_t timeout_value = stream->write_timeout;
 
     if (length == 0)
@@ -207,13 +187,13 @@ size_t api_stream_on_write(struct api_filter_t* filter,
         stream->status.terminated)
         return -1;
 
-    if (stream->loop->terminated)
+    if (stream->loop->base.terminated)
         return -1;
 
     write.buffer = buffer;
     write.length = length;
     write.offset = 0;
-    write.task = stream->loop->scheduler.current;
+    write.task = stream->loop->base.scheduler.current;
 
     stream->os_linux.reserved[1] = &write;
 
@@ -222,7 +202,7 @@ size_t api_stream_on_write(struct api_filter_t* filter,
         memset(&timeout, 0, sizeof(timeout));
         timeout.task = write.task;
 
-        api_timeout_exec(&stream->loop->timeouts, &timeout, timeout_value);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
 
     api_loop_write_add(stream->loop, stream->fd, &stream->os_linux.e);
@@ -246,11 +226,11 @@ size_t api_stream_on_write(struct api_filter_t* filter,
     api_loop_write_del(stream->loop, stream->fd, &stream->os_linux.e);
 
     if (timeout_value > 0)
-        api_timeout_exec(&stream->loop->timeouts, &timeout, 0);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->os_linux.reserved[1] = 0;
     stream->write_bandwidth.sent += write.offset;
-    stream->write_bandwidth.period += (stream->loop->now - now);
+    stream->write_bandwidth.period += (stream->loop->base.now - now);
 
     if (timeout_value > 0 && timeout.elapsed)
     {
@@ -318,7 +298,7 @@ size_t api_stream_file_on_read(struct api_filter_t* filter,
     api_stream_t* stream = filter->stream;
     api_stream_file_read_t read;
     api_timer_t timeout;
-    uint64_t now = stream->loop->now;
+    uint64_t now = stream->loop->base.now;
     uint64_t timeout_value = stream->read_timeout;
     int result;
 
@@ -345,7 +325,7 @@ size_t api_stream_file_on_read(struct api_filter_t* filter,
     read.aio.aio_sigevent.sigev_value.sival_ptr = &read;
     read.done = 0;
     read.loop = stream->loop;
-    read.task = stream->loop->scheduler.current;
+    read.task = stream->loop->base.scheduler.current;
 
     result = aio_read(&read.aio);
 
@@ -362,16 +342,16 @@ size_t api_stream_file_on_read(struct api_filter_t* filter,
         memset(&timeout, 0, sizeof(timeout));
         timeout.task = read.task;
 
-        api_timeout_exec(&stream->loop->timeouts, &timeout, timeout_value);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
 
     api_task_sleep(read.task);
 
     if (timeout_value > 0)
-        api_timeout_exec(&stream->loop->timeouts, &timeout, 0);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->read_bandwidth.read += read.done;
-    stream->read_bandwidth.period += (stream->loop->now - now);
+    stream->read_bandwidth.period += (stream->loop->base.now - now);
 
     if (timeout_value > 0 && timeout.elapsed)
     {
@@ -403,7 +383,7 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
     api_stream_file_write_t write;
     api_timer_t timeout;
     uint64_t timeout_value = stream->write_timeout;
-    uint64_t now = stream->loop->now;
+    uint64_t now = stream->loop->base.now;
     uint64_t done = 0;
     int result;
 
@@ -417,7 +397,7 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
         stream->status.terminated)
         return 0;
 
-    if (stream->loop->terminated)
+    if (stream->loop->base.terminated)
         return 0;
 
     if (timeout_value > 0)
@@ -425,7 +405,7 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
         memset(&timeout, 0, sizeof(timeout));
         timeout.task = write.task;
 
-        api_timeout_exec(&stream->loop->timeouts, &timeout, timeout_value);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
 
     do
@@ -443,7 +423,7 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
         write.aio.aio_sigevent.sigev_value.sival_ptr = &write;
         write.done = 0;
         write.loop = stream->loop;
-        write.task = stream->loop->scheduler.current;
+        write.task = stream->loop->base.scheduler.current;
 
         result = aio_write(&write.aio);
 
@@ -457,7 +437,7 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
 
         api_task_sleep(write.task);
 
-        if (stream->loop->terminated)
+        if (stream->loop->base.terminated)
             break;
 
         if (stream->status.write_timeout ||
@@ -483,10 +463,10 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
     while (done < length);
 
     if (timeout_value > 0)
-        api_timeout_exec(&stream->loop->timeouts, &timeout, 0);
+        api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->write_bandwidth.sent += done;
-    stream->write_bandwidth.period += (stream->loop->now - now);
+    stream->write_bandwidth.period += (stream->loop->base.now - now);
 
     if (timeout_value > 0 && timeout.elapsed)
     {
@@ -526,46 +506,6 @@ void api_stream_on_closed(struct api_filter_t* filter)
 
 void api_stream_on_terminate(struct api_filter_t* filter)
 {
-}
-
-size_t api_filter_on_read(api_filter_t* filter, char* buffer, size_t length)
-{
-    return filter->next->on_read(filter->next, buffer, length);
-}
-
-size_t api_filter_on_write(api_filter_t* filter, const char* buffer, size_t length)
-{
-    return filter->next->on_write(filter->next, buffer, length);
-}
-
-void api_filter_on_read_timeout(api_filter_t* filter)
-{
-    filter->next->on_read_timeout(filter->next);
-}
-
-void api_filter_on_write_timeout(api_filter_t* filter)
-{
-    filter->next->on_write_timeout(filter->next);
-}
-
-void api_filter_on_error(api_filter_t* filter, int code)
-{
-    filter->next->on_error(filter->next, code);
-}
-
-void api_filter_on_peerclosed(api_filter_t* filter)
-{
-    filter->next->on_peerclosed(filter->next);
-}
-
-void api_filter_on_closed(api_filter_t* filter)
-{
-    filter->next->on_closed(filter->next);
-}
-
-void api_filter_on_terminate(api_filter_t* filter)
-{
-    filter->next->on_terminate(filter->next);
 }
 
 void api_stream_processor(api_stream_t* stream, int events)
@@ -667,7 +607,7 @@ int api_stream_attach(api_stream_t* stream, api_loop_t* loop)
 {
     int error = API__OK;
 
-    if (loop->terminated)
+    if (loop->base.terminated)
     {
         stream->status.terminated = 1;
         return API__TERMINATE;
@@ -705,7 +645,7 @@ size_t api_stream_read(api_stream_t* stream, char* buffer, size_t length)
         stream->status.terminated)
         return 0;
 
-    if (stream->loop->terminated)
+    if (stream->loop->base.terminated)
     {
         stream->status.terminated = 1;
         return 0;
@@ -737,25 +677,6 @@ size_t api_stream_read(api_stream_t* stream, char* buffer, size_t length)
     return stream->filter_head->on_read(stream->filter_head, buffer, length);
 }
 
-size_t api_stream_unread(api_stream_t* stream,
-                         const char* buffer, size_t length)
-{
-    if (length == 0)
-        return length;
-
-    if (stream->unread.length > 0)
-        api_free(api_pool_default(stream->loop), stream->unread.length, stream->unread.buffer);
-
-    stream->unread.buffer =
-        (char*)api_alloc(api_pool_default(stream->loop), length);
-    stream->unread.length = length;
-    stream->unread.offset = 0;
-    
-    memcpy(stream->unread.buffer, buffer, length);
-
-    return length;
-}
-
 size_t api_stream_write(api_stream_t* stream,
                         const char* buffer, size_t length)
 {
@@ -769,131 +690,10 @@ size_t api_stream_write(api_stream_t* stream,
         stream->status.terminated)
         return 0;
 
-    if (stream->loop->terminated)
+    if (stream->loop->base.terminated)
         return 0;
 
     return stream->filter_head->on_write(stream->filter_head, buffer, length);
-}
-
-void api_transfer_reader(api_loop_t* loop, void* arg)
-{
-    api_transfer_t* transfer = (api_transfer_t*)arg;
-    api_pool_t* pool = api_pool_default(transfer->src->loop);
-    api_buffer_t* buffer;
-    size_t nread;
-
-    while (1)
-    {
-        buffer = (api_buffer_t*)api_alloc(pool, sizeof(*buffer));
-        buffer->buffer = (char*)api_alloc(pool, transfer->chunk_size);
-
-        nread = api_stream_read(transfer->src, buffer->buffer,
-                                transfer->chunk_size);
-
-        if (nread == 0)
-        {
-            api_free(pool, transfer->chunk_size, buffer->buffer);
-            api_free(pool, sizeof(*buffer), buffer);
-
-            transfer->read_done = 1;
-            break;
-        }
-        else
-        {
-            buffer->used = nread;
-            api_list_push_tail(&transfer->buffers, (api_node_t*)buffer);
-        }
-
-        if (transfer->write_done)
-            break;
-
-        if (transfer->num_wakeup_done == transfer->num_wakeup_req)
-        {
-            api_async_wakeup(transfer->src->loop, transfer->writer);
-            ++transfer->num_wakeup_req;
-        }
-    }
-
-    if (transfer->num_wakeup_done == transfer->num_wakeup_req)
-    {
-        api_async_wakeup(transfer->src->loop, transfer->writer);
-        ++transfer->num_wakeup_req;
-    }
-}
-
-int api_stream_transfer(api_stream_t* dst,
-                           api_stream_t* src,
-                           size_t chunk_size,
-                           size_t* transferred)
-{
-    api_transfer_t transfer;
-    size_t total = 0;
-    size_t wrote = 0;
-    size_t used;
-    int error;
-    int failed = 0;
-    api_buffer_t* buffer;
-    api_pool_t* pool = api_pool_default(src->loop);
-
-    memset(&transfer, 0, sizeof(transfer));
-
-    transfer.src = src;
-    transfer.writer = src->loop->scheduler.current;
-    transfer.chunk_size = chunk_size;
-
-    error = api_loop_post(src->loop, api_transfer_reader, &transfer, 0);
-    if (API__OK != error)
-        return error;
-
-    while (1)
-    {
-        api_task_sleep(transfer.writer);
-
-        ++transfer.num_wakeup_done;
-
-        buffer = (api_buffer_t*)api_list_pop_head(&transfer.buffers);
-        while (buffer != 0)
-        {
-            used = buffer->used;
-
-            wrote = api_stream_write(dst, buffer->buffer, used);
-
-            api_free(pool, chunk_size, buffer->buffer);
-            api_free(pool, sizeof(*buffer), buffer);
-
-            if (used == wrote)
-            {
-                buffer = (api_buffer_t*)api_list_pop_head(&transfer.buffers);
-            }
-            else
-            {
-                failed = 1;
-                transfer.write_done = 1;
-                break;
-            }
-        }
-
-        if (failed)
-            break;
-
-        total += wrote;
-        if (transfer.read_done == 1 && transfer.buffers.head == 0)
-            break;
-    }
-
-    buffer = (api_buffer_t*)api_list_pop_head(&transfer.buffers);
-    while (buffer != 0)
-    {
-        api_free(pool, chunk_size, buffer->buffer);
-        api_free(pool, sizeof(*buffer), buffer);
-
-        buffer = (api_buffer_t*)api_list_pop_head(&transfer.buffers);
-    }
-
-    if (transferred != 0)
-        *transferred = total;
-
-    return API__OK;
 }
 
 int api_stream_close(api_stream_t* stream)
@@ -933,25 +733,4 @@ int api_stream_close(api_stream_t* stream)
     }
 
     return api_error_translate(errno);
-}
-
-void api_filter_attach(api_filter_t* filter, api_stream_t* stream)
-{
-    filter->stream = stream;
-    filter->on_closed = api_filter_on_closed;
-    filter->on_error = api_filter_on_error;
-    filter->on_peerclosed = api_filter_on_peerclosed;
-    filter->on_read = api_filter_on_read;
-    filter->on_terminate = api_filter_on_terminate;
-    filter->on_write = api_filter_on_write;
-    filter->on_read_timeout = api_filter_on_read_timeout;
-    filter->on_write_timeout = api_filter_on_write_timeout;
-
-    api_list_push_head((api_list_t*)&stream->filter_head, (api_node_t*)filter);
-}
-
-void api_filter_detach(api_filter_t* filter, api_stream_t* stream)
-{
-    api_list_remove((api_list_t*)&stream->filter_head, (api_node_t*)filter);
-    filter->stream = 0;
 }

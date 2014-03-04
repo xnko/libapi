@@ -28,7 +28,7 @@ void* api_async_task_fn(api_task_t* task)
 {
     api_async_t* async = (api_async_t*)task->data;
     async->callback(async->loop, async->arg);
-    api_free(&async->loop->pool, sizeof(*async), async);
+    api_free(&async->loop->base.pool, sizeof(*async), async);
 
     return 0;
 }
@@ -54,7 +54,7 @@ void api_async_post_handler(struct api_async_t* async)
 {
     api_task_t* task;
 
-    task = api_task_create(&async->loop->scheduler, api_async_task_fn,
+    task = api_task_create(&async->loop->base.scheduler, api_async_task_fn,
                             async->stack_size);
     task->data = async;
     api_task_post(task);
@@ -77,7 +77,7 @@ void api_async_exec_handler(struct api_async_t* async)
     api_task_t* task;
     api_exec_t* exec = (api_exec_t*)async;
 
-    task = api_task_create(&async->loop->scheduler, api_exec_task_fn,
+    task = api_task_create(&async->loop->base.scheduler, api_exec_task_fn,
                             async->stack_size);
     task->data = async;
     api_task_exec(task);
@@ -96,7 +96,7 @@ void api_async_init()
 
 int api_async_post(api_loop_t* loop, api_loop_fn callback, void* arg, size_t stack_size)
 {
-    api_async_t* async = (api_async_t*)api_alloc(&loop->pool, sizeof(api_async_t));
+    api_async_t* async = (api_async_t*)api_alloc(&loop->base.pool, sizeof(api_async_t));
     int error = 0;
 
     if (async == 0)
@@ -112,7 +112,7 @@ int api_async_post(api_loop_t* loop, api_loop_fn callback, void* arg, size_t sta
                     (ULONG_PTR)&g_api_async_processor, (LPOVERLAPPED)async))
     {
         error = api_error_translate(GetLastError());
-        api_free(&loop->pool, sizeof(api_async_t), async);
+        api_free(&loop->base.pool, sizeof(api_async_t), async);
         return error;
     }
 
@@ -121,7 +121,7 @@ int api_async_post(api_loop_t* loop, api_loop_fn callback, void* arg, size_t sta
 
 int api_async_wakeup(api_loop_t* loop, api_task_t* task)
 {
-    api_async_t* async = (api_async_t*)api_alloc(&loop->pool, sizeof(api_async_t));
+    api_async_t* async = (api_async_t*)api_alloc(&loop->base.pool, sizeof(api_async_t));
     int error = 0;
 
     if (async == 0)
@@ -136,7 +136,7 @@ int api_async_wakeup(api_loop_t* loop, api_task_t* task)
                 (ULONG_PTR)&g_api_async_processor, (LPOVERLAPPED)async))
     {
         error = api_error_translate(GetLastError());
-        api_free(&loop->pool, sizeof(api_async_t), async);
+        api_free(&loop->base.pool, sizeof(api_async_t), async);
         return error;
     }
 
@@ -153,7 +153,7 @@ int api_async_exec(api_loop_t* current, api_loop_t* loop, api_loop_fn callback, 
     exec.async.arg = arg;
     exec.async.stack_size = stack_size;
     exec.loop = current;
-    exec.task = current->scheduler.current;
+    exec.task = current->base.scheduler.current;
     exec.result = 0;
 
     if (!PostQueuedCompletionStatus(loop->iocp, sizeof(exec),
@@ -163,7 +163,7 @@ int api_async_exec(api_loop_t* current, api_loop_t* loop, api_loop_fn callback, 
         return exec.result;
     }
 
-    api_task_sleep(current->scheduler.current);
+    api_task_sleep(current->base.scheduler.current);
 
     return exec.result;
 }

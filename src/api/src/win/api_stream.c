@@ -409,7 +409,7 @@ int api_stream_attach(api_stream_t* stream, api_loop_t* loop)
     if (loop->base.terminated)
     {
         stream->status.terminated = 1;
-        return 0;
+        return API__TERMINATE;
     }
 
     if (stream->type == STREAM_File || stream->type == STREAM_Tcp)
@@ -507,7 +507,7 @@ int api_stream_close(api_stream_t* stream)
     if (stream->status.closed)
         return error;
 
-    if (stream->type == STREAM_File || stream->type == STREAM_Tcp)
+    if (stream->type == STREAM_File)
     {
         stream->status.closed = 1;
         CloseHandle((HANDLE)stream->fd);

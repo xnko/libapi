@@ -411,12 +411,10 @@ int api_tcp_connect(api_tcp_t* tcp,
     if (timeout_value > 0)
         api_timeout_exec(&loop->base.timeouts, &timeout, 0);
 
-    if (timeout_value > 0 && timeout.elapsed)
+    if (API_OK == error && timeout_value > 0 && timeout.elapsed)
     {
         tcp->stream.status.read_timeout = 1;
-
-        if (API__OK != error)
-            error = api_error_translate(ERROR_TIMEOUT);
+        error = api_error_translate(ERROR_TIMEOUT);
     }
 
     if (API__OK == error)

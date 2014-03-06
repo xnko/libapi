@@ -85,6 +85,15 @@ int api_loop_run_internal(api_loop_t* loop)
             failed = 1;
             error = GetLastError();
 
+            if (error == ERROR_OPERATION_ABORTED)
+            {
+                /*
+                 * Handle was closed
+                 */
+                failed = 0;
+                key = 0;
+            }
+
             if (overlapped == NULL)
             {
                 /*

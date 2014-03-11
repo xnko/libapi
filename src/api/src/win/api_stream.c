@@ -39,7 +39,7 @@ size_t api_stream_on_read(struct api_filter_t* filter,
     api_stream_req_t read;
     api_timer_t timeout;
     uint64_t timeout_value = stream->read_timeout;
-    uint64_t now = stream->loop->base.now;
+    LARGE_INTEGER start, end, elapsed;
     WSABUF wsabuf;
     DWORD flags = 0;
     DWORD sys_error;
@@ -68,6 +68,8 @@ size_t api_stream_on_read(struct api_filter_t* filter,
 
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
+
+    QueryPerformanceCounter(&start);
 
     switch (stream->type) {
         case STREAM_File: {
@@ -139,12 +141,17 @@ size_t api_stream_on_read(struct api_filter_t* filter,
     if (!completed)
         api_task_sleep(read.task);
 
+    QueryPerformanceCounter(&end);
+    elapsed.QuadPart = end.QuadPart - start.QuadPart;
+    elapsed.QuadPart *= 1000000;
+    elapsed.QuadPart /= stream->loop->frequency.QuadPart;
+
     if (timeout_value > 0)
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->os_win.reserved[0] = 0;
     stream->read_bandwidth.read += read.done;
-    stream->read_bandwidth.period += (stream->loop->base.now - now);
+    stream->read_bandwidth.period += elapsed.QuadPart;
 
     if (stream->type == STREAM_File)
         stream->impl.file.read_offset += read.done;
@@ -169,7 +176,7 @@ size_t api_stream_on_write(struct api_filter_t* filter,
     api_stream_req_t write;
     api_timer_t timeout;
     uint64_t timeout_value = stream->write_timeout;
-    uint64_t now = stream->loop->base.now;
+    LARGE_INTEGER start, end, elapsed;
     size_t offset = 0;
     WSABUF wsabuf;
     DWORD flags = 0;
@@ -201,6 +208,8 @@ size_t api_stream_on_write(struct api_filter_t* filter,
 
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
+
+    QueryPerformanceCounter(&start);
 
     do
     {
@@ -292,12 +301,17 @@ size_t api_stream_on_write(struct api_filter_t* filter,
     }
     while (offset < length && write.done > 0);
 
+    QueryPerformanceCounter(&end);
+    elapsed.QuadPart = end.QuadPart - start.QuadPart;
+    elapsed.QuadPart *= 1000000;
+    elapsed.QuadPart /= stream->loop->frequency.QuadPart;
+
     if (timeout_value > 0)
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->os_win.reserved[1] = 0;
     stream->write_bandwidth.sent += write.done;
-    stream->write_bandwidth.period += (stream->loop->base.now - now);
+    stream->write_bandwidth.period += elapsed.QuadPart;
 
     if (timeout_value > 0 && timeout.elapsed)
     {

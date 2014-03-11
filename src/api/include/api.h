@@ -189,7 +189,10 @@ typedef struct api_stream_t {
     uint64_t write_timeout;
 
     /* bandwidths automatically calculated as a pair of total amount of bytes
-       transferred and total amount of milliseconds elapsed per operation */
+     * transferred and total amount of microseconds elapsed per operation.
+     *  milliseconds = period / 1000
+     *  seconds = period / 1000000
+     */
     struct {
         uint64_t sent;
         uint64_t period;

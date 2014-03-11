@@ -35,6 +35,7 @@ typedef struct api_loop_t {
     api_loop_base_t base;
     HANDLE iocp;
     struct api_wait_t* waiters;
+    LARGE_INTEGER frequency;
 } api_loop_t;
 
 static uint64_t api_loop_ref(api_loop_t* loop)

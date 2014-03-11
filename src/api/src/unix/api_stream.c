@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <memory.h>
+#include <time.h>
 
 #include "../../include/api.h"
 #include "api_error.h"
@@ -113,7 +114,7 @@ size_t api_stream_on_read(struct api_filter_t* filter,
     api_stream_t* stream = filter->stream;
     api_stream_read_t read;
     api_timer_t timeout;
-    uint64_t now = stream->loop->base.now;
+    struct timespec start, end, elapsed;
     uint64_t timeout_value = stream->read_timeout;
 
     if (length == 0)
@@ -142,18 +143,33 @@ size_t api_stream_on_read(struct api_filter_t* filter,
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
 
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     api_loop_read_add(stream->loop, stream->fd, &stream->os_linux.e);
 
     api_task_sleep(read.task);
 
     api_loop_read_del(stream->loop, stream->fd, &stream->os_linux.e);
 
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+	if (end.tv_nsec - start.tv_nsec < 0)
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec - 1;
+		elapsed.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+	}
+    else
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec;
+		elapsed.tv_nsec = end.tv_nsec - start.tv_nsec;
+	}
+
     if (timeout_value > 0)
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->os_linux.reserved[0] = 0;
     stream->read_bandwidth.read += read.done;
-    stream->read_bandwidth.period += (stream->loop->base.now - now);
+    stream->read_bandwidth.period += elapsed.tv_sec * 1000000 + elapsed.tv_nsec / 1000;
 
     if (timeout_value > 0 && timeout.elapsed)
     {
@@ -174,7 +190,7 @@ size_t api_stream_on_write(struct api_filter_t* filter,
     api_stream_t* stream = filter->stream;
     api_stream_write_t write;
     api_timer_t timeout;
-    uint64_t now = stream->loop->base.now;
+    struct timespec start, end, elapsed;
     uint64_t timeout_value = stream->write_timeout;
 
     if (length == 0)
@@ -205,6 +221,8 @@ size_t api_stream_on_write(struct api_filter_t* filter,
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
 
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     api_loop_write_add(stream->loop, stream->fd, &stream->os_linux.e);
 
     do
@@ -225,12 +243,25 @@ size_t api_stream_on_write(struct api_filter_t* filter,
 
     api_loop_write_del(stream->loop, stream->fd, &stream->os_linux.e);
 
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+	if (end.tv_nsec - start.tv_nsec < 0)
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec - 1;
+		elapsed.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+	}
+    else
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec;
+		elapsed.tv_nsec = end.tv_nsec - start.tv_nsec;
+	}
+
     if (timeout_value > 0)
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->os_linux.reserved[1] = 0;
     stream->write_bandwidth.sent += write.offset;
-    stream->write_bandwidth.period += (stream->loop->base.now - now);
+    stream->write_bandwidth.period += elapsed.tv_sec * 1000000 + elapsed.tv_nsec / 1000;
 
     if (timeout_value > 0 && timeout.elapsed)
     {
@@ -298,7 +329,7 @@ size_t api_stream_file_on_read(struct api_filter_t* filter,
     api_stream_t* stream = filter->stream;
     api_stream_file_read_t read;
     api_timer_t timeout;
-    uint64_t now = stream->loop->base.now;
+    struct timespec start, end, elapsed;
     uint64_t timeout_value = stream->read_timeout;
     int result;
 
@@ -345,13 +376,28 @@ size_t api_stream_file_on_read(struct api_filter_t* filter,
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
 
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     api_task_sleep(read.task);
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+	if (end.tv_nsec - start.tv_nsec < 0)
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec - 1;
+		elapsed.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+	}
+    else
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec;
+		elapsed.tv_nsec = end.tv_nsec - start.tv_nsec;
+	}
 
     if (timeout_value > 0)
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->read_bandwidth.read += read.done;
-    stream->read_bandwidth.period += (stream->loop->base.now - now);
+    stream->read_bandwidth.period += elapsed.tv_sec * 1000000 + elapsed.tv_nsec / 1000;
 
     if (timeout_value > 0 && timeout.elapsed)
     {
@@ -383,7 +429,7 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
     api_stream_file_write_t write;
     api_timer_t timeout;
     uint64_t timeout_value = stream->write_timeout;
-    uint64_t now = stream->loop->base.now;
+    struct timespec start, end, elapsed;
     uint64_t done = 0;
     int result;
 
@@ -407,6 +453,8 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
 
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
 
     do
     {
@@ -462,11 +510,24 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
     }
     while (done < length);
 
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+	if (end.tv_nsec - start.tv_nsec < 0)
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec - 1;
+		elapsed.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+	}
+    else
+    {
+		elapsed.tv_sec = end.tv_sec - start.tv_sec;
+		elapsed.tv_nsec = end.tv_nsec - start.tv_nsec;
+	}
+
     if (timeout_value > 0)
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, 0);
 
     stream->write_bandwidth.sent += done;
-    stream->write_bandwidth.period += (stream->loop->base.now - now);
+    stream->write_bandwidth.period += elapsed.tv_sec * 1000000 + elapsed.tv_nsec / 1000;
 
     if (timeout_value > 0 && timeout.elapsed)
     {

@@ -32,6 +32,8 @@ int api_loop_init(api_loop_t* loop)
     loop->base.timeouts.pool = &loop->base.pool;
     loop->waiters = 0;
 
+    QueryPerformanceFrequency(&loop->frequency); 
+
     return API__OK;
 }
 

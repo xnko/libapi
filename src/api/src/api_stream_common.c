@@ -91,10 +91,15 @@ void api_filter_on_terminate(api_filter_t* filter)
 size_t api_stream_read_exact(api_stream_t* stream, char* buffer, size_t length)
 {
     size_t offset = 0;
+    size_t done = 0;
 
     while (offset < length)
     {
-        offset += api_stream_read(stream, buffer + offset, length - offset);
+        done = api_stream_read(stream, buffer + offset, length - offset);
+        offset += done;
+
+        if (done == 0)
+            break;
     }
 
     return offset;

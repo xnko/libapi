@@ -449,7 +449,7 @@ size_t api_stream_file_on_write(struct api_filter_t* filter,
     if (timeout_value > 0)
     {
         memset(&timeout, 0, sizeof(timeout));
-        timeout.task = write.task;
+        timeout.task = stream->loop->base.scheduler.current;
 
         api_timeout_exec(&stream->loop->base.timeouts, &timeout, timeout_value);
     }

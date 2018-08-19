@@ -1,4 +1,6 @@
-# libapi
+# Obsolete, consider [libio](https://github.com/xnko/libio)
+
+## libapi
 
 libapi is a cross platform high performance io library written in C. It
 provides ability to write event driven servers and applications
